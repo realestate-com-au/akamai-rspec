@@ -1,0 +1,37 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (4.0.5)
+      columnize (= 0.9.0)
+    columnize (0.9.0)
+    diff-lcs (1.2.5)
+    json (1.8.1)
+    mime-types (2.4.3)
+    netrc (0.10.3)
+    rake (10.4.2)
+    rest-client (1.7.3)
+      mime-types (>= 1.16, < 3.0)
+      netrc (~> 0.7)
+    rspec (3.2.0)
+      rspec-core (~> 3.2.0)
+      rspec-expectations (~> 3.2.0)
+      rspec-mocks (~> 3.2.0)
+    rspec-core (3.2.3)
+      rspec-support (~> 3.2.0)
+    rspec-expectations (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-mocks (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-support (3.2.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  json
+  rake
+  rest-client (~> 1.7.2)
+  rspec
