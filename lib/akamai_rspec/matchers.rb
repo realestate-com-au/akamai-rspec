@@ -82,7 +82,9 @@ RSpec::Matchers.define :be_cacheable do
   end
 end
 
-alias_method :be_cacheable, :be_cachable
+module RSpec::Matchers
+    alias_method :be_cachable, :be_cacheable
+end
 
 RSpec::Matchers.define :have_no_cache_control do
   match do |url|
