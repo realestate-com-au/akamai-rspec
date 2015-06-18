@@ -82,6 +82,8 @@ RSpec::Matchers.define :be_cacheable do
   end
 end
 
+alias_method :be_cacheable, :be_cachable
+
 RSpec::Matchers.define :have_no_cache_control do
   match do |url|
     response = responsify url
