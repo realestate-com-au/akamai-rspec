@@ -246,7 +246,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
       end
       akamai_expires = Time.httpdate(akamai_expires)
 
-      unless akamai_expires = origin_expires
+      unless akamai_expires == origin_expires
         fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
       end
     end
