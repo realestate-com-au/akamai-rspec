@@ -1,8 +1,8 @@
 $:.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |s|
-  s.name        = 'akamai-rspec'
-  s.version     = '0.0.4'
+  s.name        = 'akamai_rspec'
+  s.version     = '0.1.4'
   s.authors     = ["Bianca Gibson"]
   s.email       = 'bianca.gibson@rea-group.com'
   s.files       = Dir["lib/*"]
