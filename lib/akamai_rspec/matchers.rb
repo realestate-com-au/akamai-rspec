@@ -50,7 +50,7 @@ RSpec::Matchers.define :be_temporarily_redirected_to do |expected_location|
   end
 end
 
-RSpec::Matchers.define :be_temporarily_redirected_with_trailing_slash do |expected_location|
+RSpec::Matchers.define :be_temporarily_redirected_with_trailing_slash do
   match do |url|
     redirect(url, url + '/', 302)
   end
