@@ -8,15 +8,13 @@ require 'rspec'
 include AkamaiHeaders
 
 def check_ssl_serial(addr, port, url, serial)
-
   tcp_client = TCPSocket.new(addr, port)
 
   # Going to need a proper request to get around Akamai request verification
   request = "GET #{url} HTTP/1.1\r\n" \
-          'User-Agent: Akamai-Regression-Framework\r\n' \
-          "Host: #{addr}\r\n" \
-          'Accept: */*\r\n'
-
+    'User-Agent: Akamai-Regression-Framework\r\n' \
+    "Host: #{addr}\r\n" \
+    'Accept: */*\r\n'
 
   ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client)
   ssl_client.sync_close = true
@@ -61,7 +59,7 @@ RSpec::Matchers.define :be_temporarily_redirected_with_trailing_slash do |expect
 end
 
 def redirect(url, expected_location, expected_response_code)
-  response = RestClient.get(url) { |response, request, result| response }
+  response = RestClient.get(url) { |response, _, _| response }
   fail "response was #{response.code}" unless response.code == expected_response_code
   fail "redirect location was #{response.headers[:location]} (expected #{expected_location})" unless response.headers[:location] == expected_location
   true
@@ -73,7 +71,6 @@ def x_check_cacheable(response, should_be_cacheable)
   fail("X-Check-Cacheable header is: #{x_check_cacheable} expected #{should_be_cacheable}") unless (x_check_cacheable == should_be_cacheable)
 end
 
-
 RSpec::Matchers.define :be_cacheable do
   match do |url|
     response = responsify url
@@ -83,7 +80,7 @@ RSpec::Matchers.define :be_cacheable do
 end
 
 module RSpec::Matchers
-    alias_method :be_cachable, :be_cacheable
+  alias_method :be_cachable, :be_cacheable
 end
 
 RSpec::Matchers.define :have_no_cache_control do
@@ -141,7 +138,7 @@ end
 RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
   header_options = [:cache_control, :expires, :both]
   headers ||= :both
-  raise "Headers must be one of: #{header_options}" unless header_options.include? headers
+  fail("Headers must be one of: #{header_options}") unless header_options.include? headers
 
   match do |url|
     akamai_response = responsify url
@@ -175,7 +172,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
       akamai_cc_directives = akamai_response.headers[:cache_control].split(/[, ]+/).to_set
 
       # Akamai can _drop_ Cache-Control headers
-      origin_cc_directives.delete "must-revalidate" # as Akamai does no pass it on
+      origin_cc_directives.delete 'must-revalidate' # as Akamai does no pass it on
 
       # Akamai can _add_ Cache-Control headers in certain circumstances:
       #
@@ -192,9 +189,9 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
       #
       # -- https://control.akamai.com/dl/rd/propmgr/PropMgr_Left.htm#CSHID=1008|StartTopic=Content%2FCaching.htm|SkinName=Akamai_skin
 
-      if not (origin_cc_directives & ['no-store', 'no-cache']).empty?
-        %w{no-store max-age=0}.each do |expected|
-          if not akamai_cc_directives.include? expected
+      unless (origin_cc_directives & ['no-store', 'no-cache']).empty?
+        %w(no-store max-age=0).each do |expected|
+          unless akamai_cc_directives.include? expected
             fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
           end
 
@@ -208,14 +205,14 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
 
       # If we send a max-age from the origin, Akamai will send a max-age value
       # that counts down from that max-age.
-      origin_max_age = origin_cc_directives.detect {|d| d.start_with? "max-age="}
-      akamai_max_age = akamai_cc_directives.detect {|d| d.start_with? "max-age="}
-      if origin_max_age and akamai_max_age
+      origin_max_age = origin_cc_directives.detect { |d| d.start_with? 'max-age=' }
+      akamai_max_age = akamai_cc_directives.detect { |d| d.start_with? 'max-age=' }
+      if origin_max_age && akamai_max_age
         origin_cc_directives.delete origin_max_age
         akamai_cc_directives.delete akamai_max_age
 
-        origin_max_age = origin_max_age.split("=").last.to_i
-        akamai_max_age = akamai_max_age.split("=").last.to_i
+        origin_max_age = origin_max_age.split('=').last.to_i
+        akamai_max_age = akamai_max_age.split('=').last.to_i
         fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}" if akamai_max_age > origin_max_age
       end
 
@@ -223,11 +220,11 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
       origin_sent_akamai_did_not = origin_cc_directives - akamai_cc_directives
       akamai_cc_added = akamai_cc_directives - origin_cc_directives
 
-      if not origin_sent_akamai_did_not.empty?
+      unless origin_sent_akamai_did_not.empty?
         fail "Origin sent 'Cache-Control: #{origin_sent_akamai_did_not.to_a.join ','}', but Akamai did not."
       end
 
-      if not akamai_cc_added.empty?
+      unless akamai_cc_added.empty?
         fail "Akamai unexpectedly added 'Cache-Control: #{akamai_cc_directives.to_a.join ','}'"
       end
     end
@@ -236,7 +233,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
       origin_expires = origin_response.headers[:expires]
       akamai_expires = akamai_response.headers[:expires]
 
-      if origin_expires == "0"
+      if origin_expires == '0'
         # A cache recipient MUST interpret invalid date formats, especially the
         # value "0", as representing a time in the past (i.e., "already
         # expired").
@@ -260,10 +257,10 @@ RSpec::Matchers.define :be_forwarded_to_index do |channel|
   match do |url|
     response = RestClient.get(url, akamai_debug_headers)
 
-    session_info = response.raw_headers["x-akamai-session-info"]
+    session_info = response.raw_headers['x-akamai-session-info']
     fail("x-akamai-session-info not found in the headers '#{response.raw_headers}'") if session_info.nil?
 
-    outcome_attribute = session_info.find {|header| header.include? 'AKA_PM_FWD_URL'}
+    outcome_attribute = session_info.find { |header| header.include? 'AKA_PM_FWD_URL' }
     fail("AKA_PM_FWD_URL not found in the x-akamai-session-info header '#{session_info}'") if outcome_attribute.nil?
 
     outcome_url = outcome_attribute.split('value=')[1]
@@ -276,12 +273,12 @@ RSpec::Matchers.define :be_tier_distributed do
     # we need to force a cache miss to see the X-Cache-Remote header
     url = response_or_url
     url = url.args[:url] if url.is_a? RestClient::Response
-    url += url.include?("?") ? "&" : "?"
+    url += url.include?('?') ? '&' : '?'
     url += SecureRandom.hex
     response = RestClient.get(url, akamai_debug_headers)
 
     tiered = !response.headers[:x_cache_remote].nil?
-    fail("No X-Cache-Remote header in response") unless tiered
+    fail('No X-Cache-Remote header in response') unless tiered
 
     response.code == 200 && tiered
   end
@@ -290,7 +287,7 @@ end
 RSpec::Matchers.define :be_gzipped do
   match do |response_or_url|
     response = responsify response_or_url
-    response.headers[:content_encoding] == "gzip"
+    response.headers[:content_encoding] == 'gzip'
   end
 end
 
@@ -303,13 +300,11 @@ RSpec::Matchers.define :set_cookie do |cookie|
 end
 
 RSpec::Matchers.define :check_cp_code do |cpcode|
- match do |response_or_url|
+  match do |response_or_url|
     response = responsify response_or_url
     unless response.headers[:x_cache_key].include?(cpcode)
       fail("CP Code #{cpcode} not in #{response.headers[:x_cache_key]}")
     end
     response.code == 200 && response.headers[:x_cache_key].include?(cpcode)
- end
+  end
 end
-
-
