@@ -28,16 +28,12 @@ module RestClient
     end
 
     def self.http_url(url)
-      unless url.start_with?('/')
-        url = "/#{url}"
-      end
+      url = "/#{url}" unless url.start_with?('/')
       "http://#{domain}#{url}"
     end
 
     def self.https_url(url)
-      unless url.start_with?('/')
-        url = "/#{url}"
-      end
+      url = "/#{url}" unless url.start_with?('/')
       "https://#{domain}#{url}"
     end
 

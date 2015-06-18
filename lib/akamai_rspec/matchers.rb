@@ -27,9 +27,7 @@ def check_ssl_serial(addr, port, url, serial)
 
   ssl_client.sysclose
 
-  unless cert.serial.to_s(16).upcase == serial.upcase
-    fail("Incorrect S/N of: #{cert.serial.to_s(16).upcase}")
-  end
+  fail("Incorrect S/N of: #{cert.serial.to_s(16).upcase}")  unless cert.serial.to_s(16).upcase == serial.upcase
 end
 
 def responsify(maybe_a_url)
@@ -119,7 +117,7 @@ RSpec::Matchers.define :be_verifiably_secure do
       RestClient::Request.execute(method: :get, url: url, verify_ssl: OpenSSL::SSL::VERIFY_PEER)
       true
     rescue => e
-      fail("#{url} could not be verified as secure, :sad_panda: #{e.message}")
+      raise("#{url} could not be verified as secure, :sad_panda: #{e.message}")
     end
   end
 end
