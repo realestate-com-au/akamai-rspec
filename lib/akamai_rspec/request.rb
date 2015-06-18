@@ -69,10 +69,10 @@ module RestClient
     def self.do_get_no_ssl(url, additional_headers={}, &block)
       headers = (options[:headers] || {}).merge(additional_headers)
       RestClient::Request.execute(options.merge(
-        :method => :get,
-        :url => url,
-        :verify_ssl => false,
-        :headers => headers), &(block || @block))
+        method: :get,
+        url: url,
+        verify_ssl: false,
+        headers: headers), &(block || @block))
     end
   end
 end

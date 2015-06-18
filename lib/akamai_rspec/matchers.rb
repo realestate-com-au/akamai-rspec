@@ -119,7 +119,7 @@ end
 RSpec::Matchers.define :be_verifiably_secure do
   match do |url|
     begin
-      RestClient::Request.execute(:method => :get, :url => url, :verify_ssl => OpenSSL::SSL::VERIFY_PEER)
+      RestClient::Request.execute(method: :get, url: url, verify_ssl: OpenSSL::SSL::VERIFY_PEER)
       true
     rescue => e
       fail("#{url} could not be verified as secure, :sad_panda: #{e.message}")
@@ -149,9 +149,9 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
     uri = URI.parse akamai_response.args[:url]
     uri.host = origin
     origin_response = RestClient::Request.execute(
-      :method => :get,
-      :url => uri.to_s,
-      :verify_ssl => false
+      method: :get,
+      url: uri.to_s,
+      verify_ssl: false
     )
 
     # Sigh. RFC 7231, section 7.1.1.2
