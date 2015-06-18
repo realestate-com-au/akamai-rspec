@@ -27,7 +27,8 @@ def check_ssl_serial(addr, port, url, serial)
 
   ssl_client.sysclose
 
-  fail("Incorrect S/N of: #{cert.serial.to_s(16).upcase}")  unless cert.serial.to_s(16).upcase == serial.upcase
+  cert_serial = cert.serial.to_s(16).upcase
+  fail("Incorrect S/N of: #{cert_serial}") unless cert_serial == serial.upcase
 end
 
 def responsify(maybe_a_url)
@@ -59,14 +60,18 @@ end
 def redirect(url, expected_location, expected_response_code)
   response = RestClient.get(url) { |response, _, _| response }
   fail "response was #{response.code}" unless response.code == expected_response_code
-  fail "redirect location was #{response.headers[:location]} (expected #{expected_location})" unless response.headers[:location] == expected_location
+  unless response.headers[:location] == expected_location
+    fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
+  end
   true
 end
 
 def x_check_cacheable(response, should_be_cacheable)
   x_check_cacheable = response.headers[:x_check_cacheable]
   fail('No X-Check-Cacheable header?') if x_check_cacheable.nil?
-  fail("X-Check-Cacheable header is: #{x_check_cacheable} expected #{should_be_cacheable}") unless (x_check_cacheable == should_be_cacheable)
+  unless (x_check_cacheable == should_be_cacheable)
+    fail("X-Check-Cacheable header is: #{x_check_cacheable} expected #{should_be_cacheable}")
+  end
 end
 
 RSpec::Matchers.define :be_cacheable do
@@ -97,7 +102,9 @@ RSpec::Matchers.define :not_be_cached do
     response = responsify response.args[:url]  # again to prevent spurious cache miss
 
     not_cached = response.headers[:x_cache] =~ /TCP(\w+)?_MISS/
-    fail("x_cache header does not indicate an origin hit: '#{response.headers[:x_cache]}'") unless not_cached
+    unless not_cached
+      fail("x_cache header does not indicate an origin hit: '#{response.headers[:x_cache]}'")
+    end
 
     response.code == 200 && not_cached
   end
@@ -211,7 +218,9 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
 
         origin_max_age = origin_max_age.split('=').last.to_i
         akamai_max_age = akamai_max_age.split('=').last.to_i
-        fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}" if akamai_max_age > origin_max_age
+        if akamai_max_age > origin_max_age
+          fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
+        end
       end
 
       # Compare the remaining Cache-Control directive sets, and complain as needed.
@@ -244,7 +253,8 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
       akamai_expires = Time.httpdate(akamai_expires)
 
       unless akamai_expires == origin_expires
-        fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
+        fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
+              "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
       end
     end
     true
@@ -256,11 +266,13 @@ RSpec::Matchers.define :be_forwarded_to_index do |channel|
     response = RestClient.get(url, akamai_debug_headers)
 
     session_info = response.raw_headers['x-akamai-session-info']
-    fail("x-akamai-session-info not found in the headers '#{response.raw_headers}'") if session_info.nil?
-
+    if session_info.nil?
+      fail("x-akamai-session-info not found in the headers '#{response.raw_headers}'")
+    end
     outcome_attribute = session_info.find { |header| header.include? 'AKA_PM_FWD_URL' }
-    fail("AKA_PM_FWD_URL not found in the x-akamai-session-info header '#{session_info}'") if outcome_attribute.nil?
-
+    if outcome_attribute.nil?
+      fail("AKA_PM_FWD_URL not found in the x-akamai-session-info header '#{session_info}'")
+    end
     outcome_url = outcome_attribute.split('value=')[1]
     response.code == 200 && outcome_url == "#{channel}"
   end
@@ -292,7 +304,9 @@ end
 RSpec::Matchers.define :set_cookie do |cookie|
   match do |response_or_url|
     response = responsify response_or_url
-    fail("Cookie #{cookie} not in #{response.cookies}") unless response.cookies[cookie]
+    unless response.cookies[cookie]
+      fail("Cookie #{cookie} not in #{response.cookies}")
+    end
     response.cookies[cookie]
   end
 end
