@@ -7,6 +7,7 @@ require 'uri'
 require 'rspec'
 include AkamaiHeaders
 
+# TODO unused
 def check_ssl_serial(addr, port, url, serial)
   cert_serial = ssl_cert(addr, port, url).serial.to_s(16).upcase
   fail("Incorrect S/N of: #{cert_serial}") unless cert_serial == serial.upcase
@@ -165,7 +166,7 @@ def cc_directives(origin_response, akamai_response)
   check_cc(origin_cc, akamai_cc) unless (origin_cc & ['no-store', 'no-cache']).empty?
 end
 
-def check_and_clean_header(origin_cc, akamai_cc, header)
+def check_and_clean_header(origin_cc, akamai_cc, expected)
   unless akamai_cc.include? expected
     fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
   end
@@ -173,10 +174,9 @@ def check_and_clean_header(origin_cc, akamai_cc, header)
   akamai_cc
 end
 
-
 def check_cc(origin_cc, akamai_cc)
-  ["no-store", "max-age=0"].each do |expected|
-    akamai_cc = check_and_clean_header(origin_cc, akamai_cc, header)
+  ['no-store', 'max-age=0'].each do |expected|
+    akamai_cc = check_and_clean_header(origin_cc, akamai_cc, expected)
   end
   return origin_cc, akamai_cc
 end
@@ -189,16 +189,18 @@ def max_age_to_num(max_age)
   max_age.split('=').last.to_i
 end
 
-def check_max_age(origin_cc_directives, akamai_cc_directives)
-  origin_max_age = max_age(origin_cc_directives)
-  akamai_max_age = max_age(akamai_cc_directives)
-  if origin_max_age && akamai_max_age
-    origin_cc_directives.delete origin_max_age
-    akamai_cc_directives.delete akamai_max_age
+def clean_max_age(cc_directives)
+  max_age = max_age(cc_directives)
+  cc_directives.delete max_age if max_age
+  return max_age_to_num(max_age), cc_directives
+end
 
-    if max_age_to_num(akamai_max_age) > max_age_to_num(origin_max_age)
-      fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
-    end
+# TODO unused
+def check_max_age(origin_cc_directives, akamai_cc_directives)
+  origin_max_age, origin_cc_directives = clean_max_age(origin_cc_directives)
+  akamai_max_age, akamai_cc_directives = clean_max_age(akamai_cc_directives)
+  if akamai_max_age > origin_max_age
+    fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
   end
   return origin_cc_directives, akamai_cc_directives
 end
