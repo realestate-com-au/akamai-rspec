@@ -7,11 +7,11 @@ Use rspec to test your akamai configuration.
 ### Basic configuration
 To use, you must configure the domains:
 # having both is stupid
-RestClient::Request.set_stg_domain("<mysite>.edgesuite-staging.net")
-RestClient::Request.set_prod_domain("<mysite>.edgesuite.net")
+RestClient::Request.stg_domain("<mysite>.edgesuite-staging.net")
+RestClient::Request.prod_domain("<mysite>.edgesuite.net")
 
 The default akamai network used is prod, to test in staging you must specify.
-RestClient::Request.set_akamai_network("staging")
+RestClient::Request.akamai_network("staging")
 
 #### matchers
 
