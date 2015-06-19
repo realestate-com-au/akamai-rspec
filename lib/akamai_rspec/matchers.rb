@@ -167,7 +167,7 @@ def origin_response(uri, origin)
   fix_date_header(RestClient::Request.execute(method: :get, url: uri.to_s, verify_ssl: false))
 end
 
-def expected_cc_modifications(origin_response, akamai_response)
+def cc_directives(origin_response, akamai_response)
   origin_cc_directives = origin_response.headers[:cache_control].split(/[, ]+/).to_set
   akamai_cc_directives = akamai_response.headers[:cache_control].split(/[, ]+/).to_set
 
@@ -204,26 +204,72 @@ def expected_cc_modifications(origin_response, akamai_response)
   return origin_cc_directives, akamai_cc_directives
 end
 
+def max_age(cc_directives)
+  cc_directives.detect { |d| d.start_with? 'max-age=' }
+end
+
+def max_age_to_num(max_age)
+  max_age.split('=').last.to_i
+end
+
 def check_max_age(origin_cc_directives, akamai_cc_directives)
   # If we send a max-age from the origin, Akamai will send a max-age value
   # that counts down from that max-age.
-  origin_max_age = origin_cc_directives.detect { |d| d.start_with? 'max-age=' }
-  akamai_max_age = akamai_cc_directives.detect { |d| d.start_with? 'max-age=' }
+  origin_max_age = max_age(origin_cc_directives)
+  akamai_max_age = max_age(akamai_cc_directives)
   if origin_max_age && akamai_max_age
     origin_cc_directives.delete origin_max_age
     akamai_cc_directives.delete akamai_max_age
 
-    origin_max_age = origin_max_age.split('=').last.to_i
-    akamai_max_age = akamai_max_age.split('=').last.to_i
-    if akamai_max_age > origin_max_age
+    if max_age_to_num(akamai_max_age) > max_age_to_num(origin_max_age)
       fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
     end
   end
   return origin_cc_directives, akamai_cc_directives
 end
 
+def check_cache_control(origin_cc_directives, akamai_cc_directives)
+  if [:both, :cache_control].include? headers
+    origin_sent_akamai_did_not = origin_cc_directives - akamai_cc_directives
+    akamai_cc_added = akamai_cc_directives - origin_cc_directives
 
-RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
+    unless origin_sent_akamai_did_not.empty?
+      fail "Origin sent 'Cache-Control: #{origin_sent_akamai_did_not.to_a.join ','}', but Akamai did not."
+    end
+
+    unless akamai_cc_added.empty?
+      fail "Akamai unexpectedly added 'Cache-Control: #{akamai_cc_directives.to_a.join ','}'"
+    end
+  end
+end
+
+def check_expires(origin_response, akamai_response)
+  if [:both, :expires].include? headers
+    akamai_expires = Time.httpdate(akamai_response.headers[:expires])
+    origin_expires = origin_expires(origin_response)
+
+    unless akamai_expires == origin_expires
+      fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
+      "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
+    end
+  end
+end
+
+def origin_expires(origin_response)
+  expires = origin_response.headers[:expires]
+  if expires == '0'
+    # A cache recipient MUST interpret invalid date formats, especially the
+    # value "0", as representing a time in the past (i.e., "already
+    # expired").
+    Time.httpdate(origin_response.headers[:date])
+  else
+    # Ruby's Time.httpdate _only_ accepts RFC 2616 dates.
+    # Using DateTime.parse to be less strict about what we accept.
+    DateTime.parse(expires)
+  end
+end
+
+RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
   header_options = [:cache_control, :expires, :both]
   headers ||= :both
   fail("Headers must be one of: #{header_options}") unless header_options.include? headers
@@ -231,47 +277,8 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
   match do |url|
     akamai_response = responsify url
     origin_response = origin_response(URI.parse akamai_response.args[:url], origin)
-
-    if [:both, :cache_control].include? headers
-
-      # Akamai can _drop_ Cache-Control headers
-      origin_cc_directives, akamai_cc_directives = cc_directives(origin_response, akamai_response)
-
-      origin_cc_directives, akamai_cc_directives = check_max_age(origin_cc_directives, akamai_cc_directives)
-      # Compare the remaining Cache-Control directive sets, and complain as needed.
-      origin_sent_akamai_did_not = origin_cc_directives - akamai_cc_directives
-      akamai_cc_added = akamai_cc_directives - origin_cc_directives
-
-      unless origin_sent_akamai_did_not.empty?
-        fail "Origin sent 'Cache-Control: #{origin_sent_akamai_did_not.to_a.join ','}', but Akamai did not."
-      end
-
-      unless akamai_cc_added.empty?
-        fail "Akamai unexpectedly added 'Cache-Control: #{akamai_cc_directives.to_a.join ','}'"
-      end
-    end
-
-    if [:both, :expires].include? headers
-      origin_expires = origin_response.headers[:expires]
-      akamai_expires = akamai_response.headers[:expires]
-
-      if origin_expires == '0'
-        # A cache recipient MUST interpret invalid date formats, especially the
-        # value "0", as representing a time in the past (i.e., "already
-        # expired").
-        origin_expires = Time.httpdate(origin_response.headers[:date])
-      else
-        # Ruby's Time.httpdate _only_ accepts RFC 2616 dates.
-        # Using DateTime.parse to be less strict about what we accept.
-        origin_expires = DateTime.parse(origin_expires)
-      end
-      akamai_expires = Time.httpdate(akamai_expires)
-
-      unless akamai_expires == origin_expires
-        fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
-        "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
-      end
-    end
+    check_cache_control(cc_directives(origin_response, akamai_response))
+    check_expires(origin_response, akamai_response)
     true
   end
 end
