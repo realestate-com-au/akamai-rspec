@@ -8,27 +8,33 @@ require 'rspec'
 include AkamaiHeaders
 
 def check_ssl_serial(addr, port, url, serial)
-  tcp_client = TCPSocket.new(addr, port)
+  cert_serial = ssl_cert(addr, port, url).serial.to_s(16).upcase
+  fail("Incorrect S/N of: #{cert_serial}") unless cert_serial == serial.upcase
+end
 
+def ssl_cert(addr, port, url)
+  ssl_client = ssl_client(TCPSocket.new(addr, port), addr, url)
+
+  # We get this after the request as we have layer 7 routing in Akamai
+  cert = OpenSSL::X509::Certificate.new(ssl_client.peer_cert)
+
+  ssl_client.sysclose
+  cert
+end
+
+def ssl_client(tcp_client, addr, url)
   # Going to need a proper request to get around Akamai request verification
   request = "GET #{url} HTTP/1.1\r\n" \
     'User-Agent: Akamai-Regression-Framework\r\n' \
     "Host: #{addr}\r\n" \
-    'Accept: */*\r\n'
+  'Accept: */*\r\n'
 
   ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client)
   ssl_client.sync_close = true
   ssl_client.connect
   ssl_client.puts(request)
   ssl_client.puts("\r\n")
-
-  # We get this after the request as we have layer 7 routing in Akamai
-  cert = OpenSSL::X509::Certificate.new(ssl_client.peer_cert)
-
-  ssl_client.sysclose
-
-  cert_serial = cert.serial.to_s(16).upcase
-  fail("Incorrect S/N of: #{cert_serial}") unless cert_serial == serial.upcase
+  ssl_client
 end
 
 def responsify(maybe_a_url)
@@ -140,6 +146,83 @@ RSpec::Matchers.define :be_served_from_origin do |origin|
   end
 end
 
+def fix_date_header(origin_response)
+  # Sigh. RFC 7231, section 7.1.1.2
+  # > An origin server MUST NOT send a Date header field if it does not have
+  # > a clock capable of providing a reasonable approximation of the current
+  # > instance in Coordinated Universal Time.  An origin server MAY send a
+  # > Date header field if the response is in the 1xx (Informational) or 5xx
+  # > (Server Error) class of status codes.  An origin server MUST send a
+  # > Date header field in all other cases.
+  #
+  # > A recipient with a clock that receives a response message without a
+  # > Date header field MUST record the time it was received and append a
+  # > corresponding Date header field to the message's header section if it is
+  # > cached or forwarded downstream.
+  origin_response.headers[:date] = Time.now.httpdate unless origin_response.headers[:date]
+end
+
+def origin_response(uri, origin)
+  uri.host = origin
+  fix_date_header(RestClient::Request.execute(method: :get, url: uri.to_s, verify_ssl: false))
+end
+
+def expected_cc_modifications(origin_response, akamai_response)
+  origin_cc_directives = origin_response.headers[:cache_control].split(/[, ]+/).to_set
+  akamai_cc_directives = akamai_response.headers[:cache_control].split(/[, ]+/).to_set
+
+  origin_cc_directives.delete 'must-revalidate' # as Akamai does no pass it on
+
+  # Akamai can _add_ Cache-Control headers in certain circumstances:
+  #
+  # > No-store: Disallow caching in Akamai platform servers and in
+  # > downstream caches. If your platform caching behavior is set to
+  # > no-store or bypass-cache, the edge server sends "cache-busting" [1]
+  # > headers downstream.
+  # >
+  # > 1: cache-busting headers:
+  # >   * Expires: [current time]
+  # >   * Cache-Control: max-age=0
+  # >   * Cache-Control: no-store
+  # >   * Pragma: no-cache
+  #
+  # -- https://control.akamai.com/dl/rd/propmgr/PropMgr_Left.htm#CSHID=1008|StartTopic=Content%2FCaching.htm|SkinName=Akamai_skin
+
+  unless (origin_cc_directives & ['no-store', 'no-cache']).empty?
+    %w(no-store max-age=0).each do |expected|
+      unless akamai_cc_directives.include? expected
+        fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
+      end
+
+      # If this header was not sent by the Origin, drop if from the Akamai
+      # set otherwise it'll show up as an unexpected add below.
+      unless origin_cc_directives.include? expected
+        akamai_cc_directives.delete expected
+      end
+    end
+  end
+  return origin_cc_directives, akamai_cc_directives
+end
+
+def check_max_age(origin_cc_directives, akamai_cc_directives)
+  # If we send a max-age from the origin, Akamai will send a max-age value
+  # that counts down from that max-age.
+  origin_max_age = origin_cc_directives.detect { |d| d.start_with? 'max-age=' }
+  akamai_max_age = akamai_cc_directives.detect { |d| d.start_with? 'max-age=' }
+  if origin_max_age && akamai_max_age
+    origin_cc_directives.delete origin_max_age
+    akamai_cc_directives.delete akamai_max_age
+
+    origin_max_age = origin_max_age.split('=').last.to_i
+    akamai_max_age = akamai_max_age.split('=').last.to_i
+    if akamai_max_age > origin_max_age
+      fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
+    end
+  end
+  return origin_cc_directives, akamai_cc_directives
+end
+
+
 RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
   header_options = [:cache_control, :expires, :both]
   headers ||= :both
@@ -147,82 +230,14 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
 
   match do |url|
     akamai_response = responsify url
-
-    uri = URI.parse akamai_response.args[:url]
-    uri.host = origin
-    origin_response = RestClient::Request.execute(
-      method: :get,
-      url: uri.to_s,
-      verify_ssl: false
-    )
-
-    # Sigh. RFC 7231, section 7.1.1.2
-    # > An origin server MUST NOT send a Date header field if it does not have
-    # > a clock capable of providing a reasonable approximation of the current
-    # > instance in Coordinated Universal Time.  An origin server MAY send a
-    # > Date header field if the response is in the 1xx (Informational) or 5xx
-    # > (Server Error) class of status codes.  An origin server MUST send a
-    # > Date header field in all other cases.
-    #
-    # > A recipient with a clock that receives a response message without a
-    # > Date header field MUST record the time it was received and append a
-    # > corresponding Date header field to the message's header section if it is
-    # > cached or forwarded downstream.
-    unless origin_response.headers[:date]
-      origin_response.headers[:date] = Time.now.httpdate
-    end
+    origin_response = origin_response(URI.parse akamai_response.args[:url], origin)
 
     if [:both, :cache_control].include? headers
-      origin_cc_directives = origin_response.headers[:cache_control].split(/[, ]+/).to_set
-      akamai_cc_directives = akamai_response.headers[:cache_control].split(/[, ]+/).to_set
 
       # Akamai can _drop_ Cache-Control headers
-      origin_cc_directives.delete 'must-revalidate' # as Akamai does no pass it on
+      origin_cc_directives, akamai_cc_directives = cc_directives(origin_response, akamai_response)
 
-      # Akamai can _add_ Cache-Control headers in certain circumstances:
-      #
-      # > No-store: Disallow caching in Akamai platform servers and in
-      # > downstream caches. If your platform caching behavior is set to
-      # > no-store or bypass-cache, the edge server sends "cache-busting" [1]
-      # > headers downstream.
-      # >
-      # > 1: cache-busting headers:
-      # >   * Expires: [current time]
-      # >   * Cache-Control: max-age=0
-      # >   * Cache-Control: no-store
-      # >   * Pragma: no-cache
-      #
-      # -- https://control.akamai.com/dl/rd/propmgr/PropMgr_Left.htm#CSHID=1008|StartTopic=Content%2FCaching.htm|SkinName=Akamai_skin
-
-      unless (origin_cc_directives & ['no-store', 'no-cache']).empty?
-        %w(no-store max-age=0).each do |expected|
-          unless akamai_cc_directives.include? expected
-            fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
-          end
-
-          # If this header was not sent by the Origin, drop if from the Akamai
-          # set otherwise it'll show up as an unexpected add below.
-          unless origin_cc_directives.include? expected
-            akamai_cc_directives.delete expected
-          end
-        end
-      end
-
-      # If we send a max-age from the origin, Akamai will send a max-age value
-      # that counts down from that max-age.
-      origin_max_age = origin_cc_directives.detect { |d| d.start_with? 'max-age=' }
-      akamai_max_age = akamai_cc_directives.detect { |d| d.start_with? 'max-age=' }
-      if origin_max_age && akamai_max_age
-        origin_cc_directives.delete origin_max_age
-        akamai_cc_directives.delete akamai_max_age
-
-        origin_max_age = origin_max_age.split('=').last.to_i
-        akamai_max_age = akamai_max_age.split('=').last.to_i
-        if akamai_max_age > origin_max_age
-          fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
-        end
-      end
-
+      origin_cc_directives, akamai_cc_directives = check_max_age(origin_cc_directives, akamai_cc_directives)
       # Compare the remaining Cache-Control directive sets, and complain as needed.
       origin_sent_akamai_did_not = origin_cc_directives - akamai_cc_directives
       akamai_cc_added = akamai_cc_directives - origin_cc_directives
@@ -254,7 +269,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin,headers|
 
       unless akamai_expires == origin_expires
         fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
-              "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
+        "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
       end
     end
     true
