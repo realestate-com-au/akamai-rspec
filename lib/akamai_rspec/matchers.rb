@@ -14,27 +14,25 @@ end
 
 def ssl_cert(addr, port, url)
   ssl_client = ssl_client(TCPSocket.new(addr, port), addr, url)
-
   # We get this after the request as we have layer 7 routing in Akamai
   cert = OpenSSL::X509::Certificate.new(ssl_client.peer_cert)
-
   ssl_client.sysclose
   cert
 end
 
-def ssl_client(tcp_client, addr, url)
-  # Going to need a proper request to get around Akamai request verification
-  request = "GET #{url} HTTP/1.1\r\n" \
+def dummy_request(url, addr)
+  "GET #{url} HTTP/1.1\r\n" \
     'User-Agent: Akamai-Regression-Framework\r\n' \
     "Host: #{addr}\r\n" \
-  'Accept: */*\r\n'
+    'Accept: */*\r\n'
+end
 
+
+def ssl_client(tcp_client, addr, url)
   ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client)
   ssl_client.sync_close = true
   ssl_client.connect
-  ssl_client.puts(request)
-  ssl_client.puts("\r\n")
-  ssl_client
+  ssl_client.puts(dummy_request(url, addr))
 end
 
 def responsify(maybe_a_url)
@@ -69,7 +67,6 @@ def redirect(url, expected_location, expected_response_code)
   unless response.headers[:location] == expected_location
     fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
   end
-  true
 end
 
 def x_check_cacheable(response, should_be_cacheable)
@@ -147,18 +144,6 @@ RSpec::Matchers.define :be_served_from_origin do |origin|
 end
 
 def fix_date_header(origin_response)
-  # Sigh. RFC 7231, section 7.1.1.2
-  # > An origin server MUST NOT send a Date header field if it does not have
-  # > a clock capable of providing a reasonable approximation of the current
-  # > instance in Coordinated Universal Time.  An origin server MAY send a
-  # > Date header field if the response is in the 1xx (Informational) or 5xx
-  # > (Server Error) class of status codes.  An origin server MUST send a
-  # > Date header field in all other cases.
-  #
-  # > A recipient with a clock that receives a response message without a
-  # > Date header field MUST record the time it was received and append a
-  # > corresponding Date header field to the message's header section if it is
-  # > cached or forwarded downstream.
   origin_response.headers[:date] = Time.now.httpdate unless origin_response.headers[:date]
 end
 
@@ -176,17 +161,22 @@ def clean_cc_directives(origin_response, akamai_response)
 end
 
 def cc_directives(origin_response, akamai_response)
-  check_cc(clean_cc_directives(origin_response, akamai_response))
+  origin_cc, akamai_cc = clean_cc_directives(origin_response, akamai_response)
+  check_cc(origin_cc, akamai_cc) unless (origin_cc & ['no-store', 'no-cache']).empty?
 end
 
+def check_and_clean_header(origin_cc, akamai_cc, header)
+  unless akamai_cc.include? expected
+    fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
+  end
+  akamai_cc.delete expected unless origin_cc.include? expected
+  akamai_cc
+end
+
+
 def check_cc(origin_cc, akamai_cc)
-  unless (origin_cc & ['no-store', 'no-cache']).empty?
-    %w(no-store max-age=0).each do |expected|
-      unless akamai_cc.include? expected
-        fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
-      end
-      akamai_cc.delete expected  unless origin_cc.include? expected
-    end
+  ["no-store", "max-age=0"].each do |expected|
+    akamai_cc = check_and_clean_header(origin_cc, akamai_cc, header)
   end
   return origin_cc, akamai_cc
 end
@@ -200,8 +190,6 @@ def max_age_to_num(max_age)
 end
 
 def check_max_age(origin_cc_directives, akamai_cc_directives)
-  # If we send a max-age from the origin, Akamai will send a max-age value
-  # that counts down from that max-age.
   origin_max_age = max_age(origin_cc_directives)
   akamai_max_age = max_age(akamai_cc_directives)
   if origin_max_age && akamai_max_age
@@ -245,13 +233,9 @@ end
 def origin_expires(origin_response)
   expires = origin_response.headers[:expires]
   if expires == '0'
-    # A cache recipient MUST interpret invalid date formats, especially the
-    # value "0", as representing a time in the past (i.e., "already
-    # expired").
+    # Must interpret invalid dates as already expired
     Time.httpdate(origin_response.headers[:date])
   else
-    # Ruby's Time.httpdate _only_ accepts RFC 2616 dates.
-    # Using DateTime.parse to be less strict about what we accept.
     DateTime.parse(expires)
   end
 end
@@ -287,18 +271,17 @@ RSpec::Matchers.define :be_forwarded_to_index do |channel|
   end
 end
 
-RSpec::Matchers.define :be_tier_distributed do
-  match do |response_or_url|
-    # we need to force a cache miss to see the X-Cache-Remote header
-    url = response_or_url
-    url = url.args[:url] if url.is_a? RestClient::Response
-    url += url.include?('?') ? '&' : '?'
-    url += SecureRandom.hex
-    response = RestClient.get(url, akamai_debug_headers)
+def request_cache_miss(url)
+  url += url.include?('?') ? '&' : '?'
+  url += SecureRandom.hex
+  RestClient.get(url, akamai_debug_headers)
+end
 
+RSpec::Matchers.define :be_tier_distributed do
+  match do |url|
+    response = request_cache_miss(url)
     tiered = !response.headers[:x_cache_remote].nil?
     fail('No X-Cache-Remote header in response') unless tiered
-
     response.code == 200 && tiered
   end
 end
