@@ -167,41 +167,28 @@ def origin_response(uri, origin)
   fix_date_header(RestClient::Request.execute(method: :get, url: uri.to_s, verify_ssl: false))
 end
 
-def cc_directives(origin_response, akamai_response)
+def clean_cc_directives(origin_response, akamai_response)
   origin_cc_directives = origin_response.headers[:cache_control].split(/[, ]+/).to_set
   akamai_cc_directives = akamai_response.headers[:cache_control].split(/[, ]+/).to_set
 
   origin_cc_directives.delete 'must-revalidate' # as Akamai does no pass it on
+  return origin_cc_directives, akamai_cc_directives
+end
 
-  # Akamai can _add_ Cache-Control headers in certain circumstances:
-  #
-  # > No-store: Disallow caching in Akamai platform servers and in
-  # > downstream caches. If your platform caching behavior is set to
-  # > no-store or bypass-cache, the edge server sends "cache-busting" [1]
-  # > headers downstream.
-  # >
-  # > 1: cache-busting headers:
-  # >   * Expires: [current time]
-  # >   * Cache-Control: max-age=0
-  # >   * Cache-Control: no-store
-  # >   * Pragma: no-cache
-  #
-  # -- https://control.akamai.com/dl/rd/propmgr/PropMgr_Left.htm#CSHID=1008|StartTopic=Content%2FCaching.htm|SkinName=Akamai_skin
+def cc_directives(origin_response, akamai_response)
+  check_cc(clean_cc_directives(origin_response, akamai_response))
+end
 
-  unless (origin_cc_directives & ['no-store', 'no-cache']).empty?
+def check_cc(origin_cc, akamai_cc)
+  unless (origin_cc & ['no-store', 'no-cache']).empty?
     %w(no-store max-age=0).each do |expected|
-      unless akamai_cc_directives.include? expected
+      unless akamai_cc.include? expected
         fail "Akamai was expected to, but did not, add 'Cache-Control: #{expected}' as Origin sent 'no-store' or 'no-cache'"
       end
-
-      # If this header was not sent by the Origin, drop if from the Akamai
-      # set otherwise it'll show up as an unexpected add below.
-      unless origin_cc_directives.include? expected
-        akamai_cc_directives.delete expected
-      end
+      akamai_cc.delete expected  unless origin_cc.include? expected
     end
   end
-  return origin_cc_directives, akamai_cc_directives
+  return origin_cc, akamai_cc
 end
 
 def max_age(cc_directives)
