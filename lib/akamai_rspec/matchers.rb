@@ -7,6 +7,34 @@ require 'uri'
 require 'rspec'
 include AkamaiHeaders
 
+# TODO make a proper matcher
+def check_ssl_serial(addr, port, url, serial)
+  cert_serial = ssl_cert(addr, port, url).serial.to_s(16).upcase
+  fail("Incorrect S/N of: #{cert_serial}") unless cert_serial == serial.upcase
+end
+
+def ssl_cert(addr, port, url)
+  ssl_client = ssl_client(TCPSocket.new(addr, port), addr, url)
+  # We get this after the request as we have layer 7 routing in Akamai
+  cert = OpenSSL::X509::Certificate.new(ssl_client.peer_cert)
+  ssl_client.sysclose
+  cert
+end
+
+def dummy_request(url, addr)
+  "GET #{url} HTTP/1.1\r\n" \
+    'User-Agent: Akamai-Regression-Framework\r\n' \
+    "Host: #{addr}\r\n" \
+  'Accept: */*\r\n'
+end
+
+def ssl_client(tcp_client, addr, url)
+  ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client)
+  ssl_client.sync_close = true
+  ssl_client.connect
+  ssl_client.puts(dummy_request(url, addr))
+end
+
 def responsify(maybe_a_url)
   if maybe_a_url.is_a? RestClient::Response
     maybe_a_url
