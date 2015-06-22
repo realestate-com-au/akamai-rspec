@@ -14,7 +14,7 @@ def check_ssl_serial(addr, port, url, serial)
 end
 
 def ssl_cert(addr, port, url)
-  ssl_client = ssl_client(TCPSocket.new(addr, port), addr, url)
+  ssl_client = ssl_client_for_verify_cert(TCPSocket.new(addr, port), addr, url)
   # We get this after the request as we have layer 7 routing in Akamai
   cert = OpenSSL::X509::Certificate.new(ssl_client.peer_cert)
   ssl_client.sysclose
@@ -28,11 +28,12 @@ def dummy_request(url, addr)
   'Accept: */*\r\n'
 end
 
-def ssl_client(tcp_client, addr, url)
+def ssl_client_for_verify_cert(tcp_client, addr, url)
   ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client)
   ssl_client.sync_close = true
   ssl_client.connect
   ssl_client.puts(dummy_request(url, addr))
+  ssl_client
 end
 
 def responsify(maybe_a_url)
