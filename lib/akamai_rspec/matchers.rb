@@ -175,42 +175,49 @@ def check_max_age(origin_cc_directives, akamai_cc_directives)
   return origin_cc_directives, akamai_cc_directives
 end
 
+def validate_akamai_dropped(origin_cc, akamai_cc)
+  dropped = origin_cc - akamai_cc
+  unless dropped.empty?
+    fail "Origin sent 'Cache-Control: #{dropped.to_a.join ','}', but Akamai did not."
+  end
+end
+
+def validate_akamai_added(origin_cc, akamai_cc)
+  added = akamai_cc - origin_cc
+  unless added.empty?
+    fail "Akamai unexpectedly added 'Cache-Control: #{added.to_a.join ','}'"
+  end
+end
+
 def check_cache_control(origin_response, akamai_response)
   if [:both, :cache_control].include? headers
     origin_cc, akamai_cc = check_max_age(cc_directives(origin_response, akamai_response))
-    akamai_dropped = origin_cc - akamai_cc
-    akamai_added = akamai_cc - origin_cc
-
-    unless akamai_dropped.empty?
-      fail "Origin sent 'Cache-Control: #{akamai_dropped.to_a.join ','}', but Akamai did not."
-    end
-
-    unless akamai_added.empty?
-      fail "Akamai unexpectedly added 'Cache-Control: #{akamai_added.to_a.join ','}'"
-    end
+    validate_akamai_dropped(origin_cc, akamai_cc)
+    validate_akamai_added(origin_cc, akamai_cc)
   end
 end
 
 def check_expires(origin_response, akamai_response)
   if [:both, :expires].include? headers
-    akamai_expires = Time.httpdate(akamai_response.headers[:expires])
-    origin_expires = origin_expires(origin_response)
-
-    unless akamai_expires == origin_expires
-      fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
-      "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
-    end
+    origin_expires, akamai_expires = expires(origin_response, akamai_response)
+    validate_expires(origin_expires, akamai_expires)
   end
+end
+
+def validate_expires(origin_expires, akamai_expires)
+  unless akamai_expires == origin_expires
+    fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
+    "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
+  end
+end
+
+def expires(origin_response, akamai_response)
+  return origin_expires(origin_response), Time.httpdate(akamai_response.headers[:expires])
 end
 
 def origin_expires(origin_response)
   expires = origin_response.headers[:expires]
-  if expires == '0'
-    # Must interpret invalid dates as already expired
-    Time.httpdate(origin_response.headers[:date])
-  else
-    DateTime.parse(expires)
-  end
+  expires == '0' ? Time.httpdate(origin_response.headers[:date]) : DateTime.parse(expires)
 end
 
 RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
