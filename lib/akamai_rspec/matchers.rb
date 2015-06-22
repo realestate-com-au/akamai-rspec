@@ -7,35 +7,6 @@ require 'uri'
 require 'rspec'
 include AkamaiHeaders
 
-# TODO unused
-def check_ssl_serial(addr, port, url, serial)
-  cert_serial = ssl_cert(addr, port, url).serial.to_s(16).upcase
-  fail("Incorrect S/N of: #{cert_serial}") unless cert_serial == serial.upcase
-end
-
-def ssl_cert(addr, port, url)
-  ssl_client = ssl_client(TCPSocket.new(addr, port), addr, url)
-  # We get this after the request as we have layer 7 routing in Akamai
-  cert = OpenSSL::X509::Certificate.new(ssl_client.peer_cert)
-  ssl_client.sysclose
-  cert
-end
-
-def dummy_request(url, addr)
-  "GET #{url} HTTP/1.1\r\n" \
-    'User-Agent: Akamai-Regression-Framework\r\n' \
-    "Host: #{addr}\r\n" \
-    'Accept: */*\r\n'
-end
-
-
-def ssl_client(tcp_client, addr, url)
-  ssl_client = OpenSSL::SSL::SSLSocket.new(tcp_client)
-  ssl_client.sync_close = true
-  ssl_client.connect
-  ssl_client.puts(dummy_request(url, addr))
-end
-
 def responsify(maybe_a_url)
   if maybe_a_url.is_a? RestClient::Response
     maybe_a_url
@@ -195,7 +166,6 @@ def clean_max_age(cc_directives)
   return max_age_to_num(max_age), cc_directives
 end
 
-# TODO unused
 def check_max_age(origin_cc_directives, akamai_cc_directives)
   origin_max_age, origin_cc_directives = clean_max_age(origin_cc_directives)
   akamai_max_age, akamai_cc_directives = clean_max_age(akamai_cc_directives)
@@ -205,17 +175,18 @@ def check_max_age(origin_cc_directives, akamai_cc_directives)
   return origin_cc_directives, akamai_cc_directives
 end
 
-def check_cache_control(origin_cc_directives, akamai_cc_directives)
+def check_cache_control(origin_response, akamai_response)
   if [:both, :cache_control].include? headers
-    origin_sent_akamai_did_not = origin_cc_directives - akamai_cc_directives
-    akamai_cc_added = akamai_cc_directives - origin_cc_directives
+    origin_cc, akamai_cc = check_max_age(cc_directives(origin_response, akamai_response))
+    akamai_dropped = origin_cc - akamai_cc
+    akamai_added = akamai_cc - origin_cc
 
-    unless origin_sent_akamai_did_not.empty?
-      fail "Origin sent 'Cache-Control: #{origin_sent_akamai_did_not.to_a.join ','}', but Akamai did not."
+    unless akamai_dropped.empty?
+      fail "Origin sent 'Cache-Control: #{akamai_dropped.to_a.join ','}', but Akamai did not."
     end
 
-    unless akamai_cc_added.empty?
-      fail "Akamai unexpectedly added 'Cache-Control: #{akamai_cc_directives.to_a.join ','}'"
+    unless akamai_added.empty?
+      fail "Akamai unexpectedly added 'Cache-Control: #{akamai_added.to_a.join ','}'"
     end
   end
 end
@@ -250,7 +221,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
   match do |url|
     akamai_response = responsify url
     origin_response = origin_response(URI.parse akamai_response.args[:url], origin)
-    check_cache_control(cc_directives(origin_response, akamai_response))
+    check_cache_control(origin_response, akamai_response)
     check_expires(origin_response, akamai_response)
     true
   end
