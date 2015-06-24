@@ -256,7 +256,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
 
   match do |url|
     akamai_response = responsify url
-    origin_response = origin_response(URI.parse akamai_response.args[:url], origin)
+    origin_response = origin_response(URI.parse(akamai_response.args[:url]), origin)
     check_cache_control(origin_response, akamai_response)
     check_expires(origin_response, akamai_response)
     true
