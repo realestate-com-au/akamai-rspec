@@ -146,6 +146,7 @@ end
 
 def fix_date_header(origin_response)
   origin_response.headers[:date] = Time.now.httpdate unless origin_response.headers[:date]
+  origin_response
 end
 
 def origin_response(uri, origin)
@@ -164,6 +165,7 @@ end
 def cc_directives(origin_response, akamai_response)
   origin_cc, akamai_cc = clean_cc_directives(origin_response, akamai_response)
   check_cc(origin_cc, akamai_cc) unless (origin_cc & ['no-store', 'no-cache']).empty?
+  return origin_cc, akamai_cc
 end
 
 def check_and_clean_header(origin_cc, akamai_cc, expected)
@@ -218,15 +220,16 @@ def validate_akamai_added(origin_cc, akamai_cc)
   end
 end
 
-def check_cache_control(origin_response, akamai_response)
+def check_cache_control(origin_response, akamai_response, headers)
   if [:both, :cache_control].include? headers
-    origin_cc, akamai_cc = check_max_age(cc_directives(origin_response, akamai_response))
+    origin_cc, akamai_cc = cc_directives(origin_response, akamai_response)
+    origin_cc, akamai_cc = check_max_age(origin_cc, akamai_cc)
     validate_akamai_dropped(origin_cc, akamai_cc)
     validate_akamai_added(origin_cc, akamai_cc)
   end
 end
 
-def check_expires(origin_response, akamai_response)
+def check_expires(origin_response, akamai_response, headers)
   if [:both, :expires].include? headers
     origin_expires, akamai_expires = expires(origin_response, akamai_response)
     validate_expires(origin_expires, akamai_expires)
@@ -257,8 +260,8 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
   match do |url|
     akamai_response = responsify url
     origin_response = origin_response(URI.parse(akamai_response.args[:url]), origin)
-    check_cache_control(origin_response, akamai_response)
-    check_expires(origin_response, akamai_response)
+    check_cache_control(origin_response, akamai_response, headers)
+    check_expires(origin_response, akamai_response, headers)
     true
   end
 end
