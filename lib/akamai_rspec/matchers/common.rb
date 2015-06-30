@@ -5,7 +5,7 @@ require 'time'
 require 'openssl'
 require 'uri'
 require 'rspec'
-require 'matchers/redirects'
+require_relative 'redirects'
 include AkamaiHeaders
 
 # TODO make a proper matcher
