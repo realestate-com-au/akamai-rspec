@@ -1,4 +1,5 @@
 require 'rspec'
+require_relative 'common'
 
 RSpec::Matchers.define :be_permanently_redirected_to do |expected_location|
   match do |url|
