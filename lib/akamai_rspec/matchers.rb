@@ -236,10 +236,9 @@ def check_expires(origin_response, akamai_response, headers)
   end
 end
 
-def validate_expires(origin_expires, akamai_expires)
-  unless akamai_expires == origin_expires
-    fail "Origin sent 'Expires: #{origin_response.headers[:expires]}', "\
-    "but Akamai sent 'Expires: #{akamai_response.headers[:expires]}'"
+def validate_expires(origin, akamai)
+  unless akamai == origin
+    fail "Origin sent 'Expires: #{origin}' but Akamai sent 'Expires: #{akamai}'"
   end
 end
 
