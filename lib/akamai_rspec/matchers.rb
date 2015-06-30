@@ -68,6 +68,7 @@ def redirect(url, expected_location, expected_response_code)
   unless response.headers[:location] == expected_location
     fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
   end
+  true
 end
 
 def x_check_cacheable(response, should_be_cacheable)
