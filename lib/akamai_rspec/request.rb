@@ -72,7 +72,7 @@ module RestClient
         headers: headers), &(block || @block))
     end
 
-    def responsify(maybe_a_url)
+    def self.responsify(maybe_a_url)
       if maybe_a_url.is_a? RestClient::Response
         maybe_a_url
       else

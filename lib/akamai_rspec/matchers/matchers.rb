@@ -8,7 +8,7 @@ include AkamaiHeaders
 
 RSpec::Matchers.define :be_served_from_origin do |origin|
   match do |url|
-    response = responsify url
+    response = RestClient::Request::responsify url
     fail 'No X-Cache-Key header' if response.headers[:x_cache_key].nil?
     unless response.headers[:x_cache_key].include?(origin)
       fail("x_cache_key has value '#{response.headers[:x_cache_key]}' which doesn't include '#{origin}'")
@@ -51,7 +51,7 @@ end
 
 RSpec::Matchers.define :check_cp_code do |cpcode|
   match do |response_or_url|
-    response = responsify response_or_url
+    response = RestClient::Request::responsify response_or_url
     unless response.headers[:x_cache_key].include?(cpcode)
       fail("CP Code #{cpcode} not in #{response.headers[:x_cache_key]}")
     end
