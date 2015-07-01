@@ -59,10 +59,3 @@ RSpec::Matchers.define :check_cp_code do |cpcode|
   end
 end
 
-def responsify(maybe_a_url)
-  if maybe_a_url.is_a? RestClient::Response
-    maybe_a_url
-  else
-    RestClient.get(maybe_a_url, akamai_debug_headers)
-  end
-end
