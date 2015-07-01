@@ -56,7 +56,7 @@ RSpec::Matchers.define :be_gzipped do
   end
 end
 
-RSpec::Matchers.define :set_cookie do |cookie|
+RSpec::Matchers.define :have_cookie do |cookie|
   match do |response_or_url|
     response = RestClient::Request.responsify response_or_url
     unless response.cookies[cookie]

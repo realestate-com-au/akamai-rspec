@@ -47,7 +47,7 @@ response headers
 
 ``` be_gzipped ```
 
-``` set_cookie ```
+``` have_cookie ```
 
 ``` check_cp_code ```
 
