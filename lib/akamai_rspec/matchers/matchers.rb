@@ -1,17 +1,10 @@
 require 'securerandom'
-require 'set'
-require 'socket'
-require 'time'
-require 'openssl'
-require 'uri'
 require 'rspec'
 require_relative 'redirects'
 require_relative 'caching'
 require_relative 'non_akamai'
 require_relative 'honour_origin_headers'
 include AkamaiHeaders
-
-# TODO make a proper matcher
 
 RSpec::Matchers.define :be_served_from_origin do |origin|
   match do |url|
@@ -63,5 +56,13 @@ RSpec::Matchers.define :check_cp_code do |cpcode|
       fail("CP Code #{cpcode} not in #{response.headers[:x_cache_key]}")
     end
     response.code == 200 && response.headers[:x_cache_key].include?(cpcode)
+  end
+end
+
+def responsify(maybe_a_url)
+  if maybe_a_url.is_a? RestClient::Response
+    maybe_a_url
+  else
+    RestClient.get(maybe_a_url, akamai_debug_headers)
   end
 end

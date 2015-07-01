@@ -1,5 +1,7 @@
 require 'rspec'
-require_relative 'common'
+require 'set'
+require 'time'
+require 'uri'
 
 def fix_date_header(origin_response)
   origin_response.headers[:date] = Time.now.httpdate unless origin_response.headers[:date]
@@ -121,4 +123,3 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
     true
   end
 end
-

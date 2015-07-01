@@ -1,5 +1,6 @@
 require 'rspec'
-require_relative 'common'
+require 'socket'
+require 'openssl'
 
 def check_ssl_serial(addr, port, url, serial)
   cert_serial = ssl_cert(addr, port, url).serial.to_s(16).upcase
@@ -29,13 +30,6 @@ def ssl_client_for_verify_cert(tcp_client, addr, url)
   ssl_client
 end
 
-def responsify(maybe_a_url)
-  if maybe_a_url.is_a? RestClient::Response
-    maybe_a_url
-  else
-    RestClient.get(maybe_a_url, akamai_debug_headers)
-  end
-end
 
 RSpec::Matchers.define :be_successful do
   match do |url|

@@ -1,4 +1,6 @@
 require 'rest-client'
+require_relative 'akamai_headers'
+
 module RestClient
   class Request
     @@akamai_network = 'prod'
@@ -68,6 +70,14 @@ module RestClient
         url: url,
         verify_ssl: false,
         headers: headers), &(block || @block))
+    end
+
+    def responsify(maybe_a_url)
+      if maybe_a_url.is_a? RestClient::Response
+        maybe_a_url
+      else
+        RestClient.get(maybe_a_url, akamai_debug_headers)
+      end
     end
   end
 end

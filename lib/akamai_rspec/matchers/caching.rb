@@ -1,5 +1,5 @@
 require 'rspec'
-require_relative 'common'
+require 'securerandom'
 
 RSpec::Matchers.define :be_cacheable do
   match do |url|
