@@ -29,6 +29,11 @@ module RestClient
       @@akamai_prod_domain = domain
     end
 
+    def self.domain(domain)
+      @@akamai_prod_domain = domain + ".edgesuite.net"
+      @@akamai_stg_domain = domain + ".edgesuite-staging.net"
+    end
+
     def self.http_url(url)
       url = "/#{url}" unless url.start_with?('/')
       "http://#{domain}#{url}"
