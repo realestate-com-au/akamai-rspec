@@ -55,3 +55,20 @@ RSpec::Matchers.define :be_verifiably_secure do
     end
   end
 end
+
+RSpec::Matchers.define :be_gzipped do
+  match do |response_or_url|
+    response = responsify response_or_url
+    response.headers[:content_encoding] == 'gzip'
+  end
+end
+
+RSpec::Matchers.define :set_cookie do |cookie|
+  match do |response_or_url|
+    response = responsify response_or_url
+    unless response.cookies[cookie]
+      fail("Cookie #{cookie} not in #{response.cookies}")
+    end
+    response.cookies[cookie]
+  end
+end

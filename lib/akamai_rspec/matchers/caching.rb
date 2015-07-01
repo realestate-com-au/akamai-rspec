@@ -37,6 +37,15 @@ RSpec::Matchers.define :not_be_cached do
   end
 end
 
+RSpec::Matchers.define :be_tier_distributed do
+  match do |url|
+    response = request_cache_miss(url)
+    tiered = !response.headers[:x_cache_remote].nil?
+    fail('No X-Cache-Remote header in response') unless tiered
+    response.code == 200 && tiered
+  end
+end
+
 def x_check_cacheable(response, should_be_cacheable)
   x_check_cacheable = response.headers[:x_check_cacheable]
   fail('No X-Check-Cacheable header?') if x_check_cacheable.nil?
@@ -45,4 +54,8 @@ def x_check_cacheable(response, should_be_cacheable)
   end
 end
 
-
+def request_cache_miss(url)
+  url += url.include?('?') ? '&' : '?'
+  url += SecureRandom.hex
+  RestClient.get(url, akamai_debug_headers)
+end
