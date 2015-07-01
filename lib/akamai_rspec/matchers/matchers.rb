@@ -49,7 +49,7 @@ RSpec::Matchers.define :be_tier_distributed do
   end
 end
 
-RSpec::Matchers.define :check_cp_code do |cpcode|
+RSpec::Matchers.define :have_cp_code do |cpcode|
   match do |response_or_url|
     response = RestClient::Request.responsify response_or_url
     unless response.headers[:x_cache_key].include?(cpcode)

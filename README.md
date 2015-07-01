@@ -49,7 +49,7 @@ response headers
 
 ``` have_cookie ```
 
-``` check_cp_code ```
+``` have_cp_code ```
 
 # making requests
 
