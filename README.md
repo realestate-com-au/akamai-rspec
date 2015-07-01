@@ -29,8 +29,7 @@ The same as be_temporarily_redirected_to, but also expect the response location 
 Requests to the url with the akamai debug headers should have X-Check-Cacheable as yes in the
 response headers
 
-``` have_no_cache_control ```
-
+``` have_no_cache_set ```
 
 ``` not_be_cached ```
 

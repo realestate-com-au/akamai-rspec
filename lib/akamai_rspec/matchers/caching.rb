@@ -13,7 +13,7 @@ module RSpec::Matchers
   alias_method :be_cachable, :be_cacheable
 end
 
-RSpec::Matchers.define :have_no_cache_control do
+RSpec::Matchers.define :have_no_cache_set do
   match do |url|
     response = RestClient::Request.responsify url
     cache_control = response.headers[:cache_control]
