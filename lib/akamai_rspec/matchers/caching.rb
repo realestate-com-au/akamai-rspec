@@ -1,10 +1,9 @@
 require 'rspec'
 require 'securerandom'
-#require 'akamai_rspec/request'
 
 RSpec::Matchers.define :be_cacheable do
   match do |url|
-    response = RestClient::Request::responsify url
+    response = RestClient::Request.responsify url
     x_check_cacheable(response, 'YES')
     response.code == 200
   end
@@ -16,7 +15,7 @@ end
 
 RSpec::Matchers.define :have_no_cache_control do
   match do |url|
-    response = RestClient::Request::responsify url
+    response = RestClient::Request.responsify url
     cache_control = response.headers[:cache_control]
     fail('Cache-Control has been set') unless cache_control == 'no-cache'
     true
@@ -25,15 +24,14 @@ end
 
 RSpec::Matchers.define :not_be_cached do
   match do |url|
-    response = RestClient::Request::responsify url
+    response = RestClient::Request.responsify url
     x_check_cacheable(response, 'NO')
-    response = RestClient::Request::responsify response.args[:url]  # again to prevent spurious cache miss
+    response = RestClient::Request.responsify response.args[:url]  # again to prevent spurious cache miss
 
     not_cached = response.headers[:x_cache] =~ /TCP(\w+)?_MISS/
     unless not_cached
       fail("x_cache header does not indicate an origin hit: '#{response.headers[:x_cache]}'")
     end
-
     response.code == 200 && not_cached
   end
 end

@@ -30,10 +30,9 @@ def ssl_client_for_verify_cert(tcp_client, addr, url)
   ssl_client
 end
 
-
 RSpec::Matchers.define :be_successful do
   match do |url|
-    response = RestClient::Request::responsify url
+    response = RestClient::Request.responsify url
     fail('Response was not successful') unless response.code == 200
     true
   end
@@ -52,14 +51,14 @@ end
 
 RSpec::Matchers.define :be_gzipped do
   match do |response_or_url|
-    response = RestClient::Request::responsify response_or_url
+    response = RestClient::Request.responsify response_or_url
     response.headers[:content_encoding] == 'gzip'
   end
 end
 
 RSpec::Matchers.define :set_cookie do |cookie|
   match do |response_or_url|
-    response = RestClient::Request::responsify response_or_url
+    response = RestClient::Request.responsify response_or_url
     unless response.cookies[cookie]
       fail("Cookie #{cookie} not in #{response.cookies}")
     end
