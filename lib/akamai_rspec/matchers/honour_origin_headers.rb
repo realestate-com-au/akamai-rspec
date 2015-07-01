@@ -3,6 +3,20 @@ require 'set'
 require 'time'
 require 'uri'
 
+RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
+  header_options = [:cache_control, :expires, :both]
+  headers ||= :both
+  fail("Headers must be one of: #{header_options}") unless header_options.include? headers
+
+  match do |url|
+    akamai_response = responsify url
+    origin_response = origin_response(URI.parse(akamai_response.args[:url]), origin)
+    check_cache_control(origin_response, akamai_response, headers)
+    check_expires(origin_response, akamai_response, headers)
+    true
+  end
+end
+
 def fix_date_header(origin_response)
   origin_response.headers[:date] = Time.now.httpdate unless origin_response.headers[:date]
   origin_response
@@ -108,18 +122,4 @@ end
 def origin_expires(origin_response)
   expires = origin_response.headers[:expires]
   expires == '0' ? Time.httpdate(origin_response.headers[:date]) : DateTime.parse(expires)
-end
-
-RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
-  header_options = [:cache_control, :expires, :both]
-  headers ||= :both
-  fail("Headers must be one of: #{header_options}") unless header_options.include? headers
-
-  match do |url|
-    akamai_response = responsify url
-    origin_response = origin_response(URI.parse(akamai_response.args[:url]), origin)
-    check_cache_control(origin_response, akamai_response, headers)
-    check_expires(origin_response, akamai_response, headers)
-    true
-  end
 end
