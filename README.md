@@ -6,9 +6,9 @@ Use rspec to test your akamai configuration.
 
 ### Basic configuration
 To use, you must configure you domain:
-'''
+```
 RestClient::Request.domain("www.example.com")
-'''
+```
 Where my-domain does not include '.edgesuite.net' and '.edgesuite-staging.net', because the library
 adds them automatically.
 
@@ -23,7 +23,7 @@ RestClient::Request.akamai_network("staging")
 
 #### matchers
 
-``` be_permanently_redirected_to ```
+#``` be_permanently_redirected_to ```
 ``` expect(old).to be_permanently_redirected_to(new) ```
 Requires the response code to be 301, and redirect to new
 
