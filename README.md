@@ -28,6 +28,7 @@ RestClient::Request.akamai_network("staging")
 
 #### ``` be_permanently_redirected_to ```
 ``` expect(old).to be_permanently_redirected_to(new) ```
+
 Requires the response code to be 301, and redirect to new
 
 #### ``` be_temporarily_redirected_to ```
@@ -49,6 +50,7 @@ Check that the header ```Cache-control = no-cache```
 
 #### ``` not_be_cached ```
 ```expect(url).to not_be_cached```
+
 Requests the resource twice, and check that the 'x-cache' header says miss, and response code is 200
 
 #### ``` be_successful ```
@@ -57,49 +59,63 @@ response = RestClient.get(url)
 expect(url).to be_successful
 expect(response).to be_successful
 ```
+
 expect a response code of 200
 
 #### ``` be_verifiably_secure ```
 ```expect(url).to be_verifiably_secure```
+
 The SSL cert can be verified
 
 #### ``` be_served_from_origin ```
 ```expect(url).to be_served_from_origin origin```
+
 Response code is 200 and 'x_cache_key' header to include origin url
 
 #### ``` honour_origin_cache_headers```
 ```expect(url).to honour_origin_cache_headers origin```
+
 Check that akamai and origin cache headers correspond, and takes in to account expected differences.
 
 #### ``` be_forwarded_to_index ```
 ```expect(url + “/” channel).to be_forwarded_to_index(channel)```
+
 - Expect response to have x-akamai-session-info
 - Expect AKA_PM_FWD_URL header to end in channel, which means it is being passed to origin
 - Response code is 200
 
 #### ``` be_tier_distributed ```
 ```expect(response).to be_tier_distributed```
+
 Forces a cache miss with a query string and checks that 'x_cache_remote' header is set.
 
 #### ``` be_gzipped ```
 ```expect(url).to be_gzipped```
+
 Expect the response to be gzipped.
 
 #### ``` have_cookie ```
 ```expect(response).to have_cookie cookie```
+
 Expect the response to contain the specified cookie
 
 #### ``` have_cp_code ```
 ```expect(url).to have_cp_code(cp_code)```
+
 - Check that cache key contains Content Provider Code
 - 200 response
 
-# making requests
+## making requests
+```
+response = RestClient::Request::http_get(url, headers)
+response = RestClient::Request::https_get(url, headers)
+```
+Makes request to your base url that you set during initial configuration + ```url`` supplied in call.
 
-## Contributions
+# Contributions
 We would be very thankful for any contributions, particularly documentation or tests.
 
-## License
+# License
 Copyright (C) 2015 REA Group Ltd.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
