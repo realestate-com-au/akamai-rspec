@@ -58,9 +58,11 @@ end
 describe "be_tier_distributed" do
   before(:each) do
     cacheable_uri = Addressable::Template.new DOMAIN + "/cacheable?{random}"
-    stub_request(:any, cacheable_uri).to_return( :body => "abc", :headers => {"X_Cache_Remote" => "TCP_MISS" })
+    stub_request(:any, cacheable_uri).to_return(
+                  :body => "abc", :headers => {"X_Cache_Remote" => "TCP_MISS" })
     not_cacheable_uri = Addressable::Template.new DOMAIN + "/not_cacheable?{random}"
-    stub_request(:any, not_cacheable_uri).to_return( :body => "abc", :headers => {"Cache-control" => "no-cache" })
+    stub_request(:any, not_cacheable_uri).to_return(
+                  :body => "abc", :headers => {"Cache-control" => "no-cache" })
   end
 
   it "should succeed when it is remote cached" do
