@@ -5,9 +5,9 @@ require 'akamai_rspec'
 DOMAIN = "www.example.com.edgesuite.net"
 RestClient::Request.prod_domain(DOMAIN)
 
-def stub_headers(url, headers)
+def stub_headers(url, headers, body="abc")
   stub_request(:any, DOMAIN + url).to_return(
-    :body => "abc", :headers => headers)
+    :body => body, :headers => headers)
 end
 
 def stub_status(url, status)

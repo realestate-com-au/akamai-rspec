@@ -73,8 +73,3 @@ describe "be_tier_distributed" do
     expect{expect(DOMAIN + "/not_cacheable").to be_tier_distributed}.to raise_error(RuntimeError)
   end
 end
-
-def stub_headers(url, headers)
-  stub_request(:any, DOMAIN + url).to_return(
-    :body => "abc", :headers => headers)
-end
