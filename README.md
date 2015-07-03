@@ -5,14 +5,7 @@ Use rspec to test your akamai configuration.
 ## How to use
 
 ### Basic configuration
-To use, you must configure you domain:
-```
-RestClient::Request.domain("www.example.com")
-```
-Where my-domain does not include '.edgesuite.net' and '.edgesuite-staging.net', because the library
-adds them automatically.
-
-If you need to set both the staging and prod domains manually, you can use:
+To use the requests outside of matchers, you must configure your domain:
 
 ```
 RestClient::Request.prod_domain("www.example.com.edgesuite.net")
@@ -110,7 +103,7 @@ Expect the response to contain the specified cookie
 response = RestClient::Request::http_get(url, headers)
 response = RestClient::Request::https_get(url, headers)
 ```
-Makes request to your base url that you set during initial configuration + ```url`` supplied in call.
+Makes request to your base url that you set during initial configuration + ```url``` supplied in call.
 
 # Contributions
 We would be very thankful for any contributions, particularly documentation or tests.

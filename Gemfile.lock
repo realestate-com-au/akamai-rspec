@@ -1,9 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.3.8)
     byebug (4.0.5)
       columnize (= 0.9.0)
     columnize (0.9.0)
+    crack (0.4.2)
+      safe_yaml (~> 1.0.0)
     diff-lcs (1.2.5)
     json (1.8.1)
     mime-types (2.4.3)
@@ -25,6 +28,10 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
     rspec-support (3.2.2)
+    safe_yaml (1.0.4)
+    webmock (1.21.0)
+      addressable (>= 2.3.6)
+      crack (>= 0.3.2)
 
 PLATFORMS
   ruby
@@ -35,3 +42,4 @@ DEPENDENCIES
   rake
   rest-client (~> 1.7.2)
   rspec
+  webmock

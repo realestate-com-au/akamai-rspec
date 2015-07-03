@@ -34,21 +34,6 @@ RSpec::Matchers.define :be_forwarded_to_index do |channel|
   end
 end
 
-def request_cache_miss(url)
-  url += url.include?('?') ? '&' : '?'
-  url += SecureRandom.hex
-  RestClient.get(url, akamai_debug_headers)
-end
-
-RSpec::Matchers.define :be_tier_distributed do
-  match do |url|
-    response = request_cache_miss(url)
-    tiered = !response.headers[:x_cache_remote].nil?
-    fail('No X-Cache-Remote header in response') unless tiered
-    response.code == 200 && tiered
-  end
-end
-
 RSpec::Matchers.define :have_cp_code do |cpcode|
   match do |response_or_url|
     response = RestClient::Request.responsify response_or_url

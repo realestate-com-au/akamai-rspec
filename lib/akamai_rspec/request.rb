@@ -1,5 +1,5 @@
 require 'rest-client'
-require_relative 'akamai_headers'
+require_relative './akamai_headers'
 
 module RestClient
   class Request
@@ -29,11 +29,6 @@ module RestClient
       @@akamai_prod_domain = domain
     end
 
-    def self.domain(domain)
-      @@akamai_prod_domain = domain + ".edgesuite.net"
-      @@akamai_stg_domain = domain + ".edgesuite-staging.net"
-    end
-
     def self.http_url(url)
       url = "/#{url}" unless url.start_with?('/')
       "http://#{domain}#{url}"
@@ -46,7 +41,7 @@ module RestClient
 
     # Define the Host header and join the Akamai headers
     def self.options
-      akamai_debug_headers
+      AkamaiHeaders.akamai_debug_headers
     end
 
     # Make requests to the right network
@@ -64,7 +59,7 @@ module RestClient
       else
         base_url = http_url(url)
       end
-      headers = options.merge(akamai_debug_headers).merge(cookies)
+      headers = options.merge(AkamaiHeaders.akamai_debug_headers).merge(cookies)
       do_get_no_ssl(base_url, headers) { |response, _, _| response }
     end
 
@@ -81,8 +76,14 @@ module RestClient
       if maybe_a_url.is_a? RestClient::Response
         maybe_a_url
       else
-        RestClient.get(maybe_a_url, akamai_debug_headers)
+        RestClient.get(maybe_a_url, AkamaiHeaders.akamai_debug_headers)
       end
+    end
+
+    def self.request_cache_miss(url)
+      url += url.include?('?') ? '&' : '?'
+      url += SecureRandom.hex
+      RestClient.get(url, AkamaiHeaders.akamai_debug_headers)
     end
   end
 end
