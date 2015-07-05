@@ -10,7 +10,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
 
   match do |url|
     akamai_response = RestClient::Request.responsify url
-    origin_response = origin_response(URI.parse(akamai_response.args[:url]), origin)
+    origin_response = origin_response(origin)
     check_cache_control(origin_response, akamai_response, headers)
     check_expires(origin_response, akamai_response, headers)
     true
@@ -22,9 +22,8 @@ def fix_date_header(origin_response)
   origin_response
 end
 
-def origin_response(uri, origin)
-  uri.host = origin
-  fix_date_header(RestClient::Request.execute(method: :get, url: uri.to_s, verify_ssl: false))
+def origin_response(origin)
+  fix_date_header(RestClient::Request.execute(method: :get, url: origin, verify_ssl: false))
 end
 
 def clean_cc_directives(origin_response, akamai_response)
@@ -110,7 +109,7 @@ def check_expires(origin_response, akamai_response, headers)
 end
 
 def validate_expires(origin, akamai)
-  unless akamai == origin
+  unless akamai.to_i == origin.to_i
     fail "Origin sent 'Expires: #{origin}' but Akamai sent 'Expires: #{akamai}'"
   end
 end
@@ -121,5 +120,5 @@ end
 
 def origin_expires(origin_response)
   expires = origin_response.headers[:expires]
-  expires == '0' ? Time.httpdate(origin_response.headers[:date]) : DateTime.parse(expires)
+  expires == '0' ? Time.httpdate(origin_response.headers[:date]) : Time.httpdate(expires)
 end
