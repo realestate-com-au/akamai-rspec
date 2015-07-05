@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'rspec/expectations'
+require 'openssl'
 
 describe 'be_successful' do
   before(:each) do
@@ -62,5 +63,15 @@ describe 'have_cookie' do
 
   it 'should fail when there are no cookies' do
     expect { expect(DOMAIN + '/no-cookie').to have_cookie('wrong') }.to raise_error(RuntimeError)
+  end
+end
+
+describe 'be_verifiably_secure' do
+  it 'should succeed when it verifies correctly' do
+    stub_request(:any, DOMAIN).to_return(body: 'abc')
+    module OpenSSL::SSL
+      suppress_warnings { VERIFY_PEER = false }
+    end
+    expect(DOMAIN).to be_verifiably_secure
   end
 end
