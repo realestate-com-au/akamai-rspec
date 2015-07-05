@@ -45,3 +45,23 @@ describe 'be_gzipped' do
       .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
+
+describe 'have_cookie' do
+  before(:each) do
+    stub_headers('/omnom', 'set-cookie' => 'cookie=yummy')
+    stub_headers('/no-cookie', {})
+  end
+
+  it 'should pass when cookie is set' do
+    expect(DOMAIN + '/omnom').to have_cookie('cookie')
+  end
+
+  it 'should fail when cookie is not set' do
+    expect{ expect(DOMAIN + '/omnom').to have_cookie('wrong') }.to raise_error(RuntimeError)
+  end
+
+  it 'should fail when there are no cookies' do
+    expect{ expect(DOMAIN + '/no-cookie').to have_cookie('wrong') }.to raise_error(RuntimeError)
+  end
+
+end
