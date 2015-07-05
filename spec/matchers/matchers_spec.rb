@@ -18,15 +18,25 @@ describe 'have_cp_code_set' do
 end
 
 describe 'be_served_from_origin' do
+  before(:each) do
+    x_cache = { 'x-cache-key' => 'origin' }
+    stub_headers('/correct', x_cache)
+    stub_request(:any, DOMAIN + '/redirect').to_return(
+      body: 'abc', headers: x_cache,
+      status: [300, 'message'])
+  end
+
   it 'should succeed with 200 and correct origin' do
-    pending
+    expect(DOMAIN + '/correct').to be_served_from_origin('origin')
   end
 
   it 'should fail on 300 and correct origin' do
-    pending
+    expect { expect(DOMAIN + '/redirect').to be_served_from_origin('origin') }
+      .to raise_error(RuntimeError)
   end
 
   it 'should fail on 200 and incorrect origin' do
-    pending
+    expect { expect(DOMAIN + '/correct').to be_served_from_origin('incorrect') }
+      .to raise_error(RuntimeError)
   end
 end
