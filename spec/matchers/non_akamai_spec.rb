@@ -31,14 +31,17 @@ describe 'be_gzipped' do
   end
 
   it 'should fail when not gzipped but header lies' do
-    expect { expect(DOMAIN + '/not_gzipped_lies').to be_gzipped }.to raise_error(Zlib::GzipFile::Error)
+    expect { expect(DOMAIN + '/not_gzipped_lies').to be_gzipped }
+      .to raise_error(Zlib::GzipFile::Error)
   end
 
   it 'should fail when gzipped but header lies' do
-    expect { expect(DOMAIN + '/gzipped_lies').to be_gzipped }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    expect { expect(DOMAIN + '/gzipped_lies').to be_gzipped }
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail when not gzipped' do
-    expect { expect(DOMAIN + '/not_gzipped').to be_gzipped }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    expect { expect(DOMAIN + '/not_gzipped').to be_gzipped }
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
