@@ -37,6 +37,7 @@ end
 RSpec::Matchers.define :have_cp_code do |cpcode|
   match do |response_or_url|
     response = RestClient::Request.responsify response_or_url
+    fail('No x-cache-key header in response') if ! response.headers.keys.include?(:x_cache_key)
     unless response.headers[:x_cache_key].include?(cpcode)
       fail("CP Code #{cpcode} not in #{response.headers[:x_cache_key]}")
     end

@@ -57,11 +57,10 @@ describe 'have_cookie' do
   end
 
   it 'should fail when cookie is not set' do
-    expect{ expect(DOMAIN + '/omnom').to have_cookie('wrong') }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/omnom').to have_cookie('wrong') }.to raise_error(RuntimeError)
   end
 
   it 'should fail when there are no cookies' do
-    expect{ expect(DOMAIN + '/no-cookie').to have_cookie('wrong') }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/no-cookie').to have_cookie('wrong') }.to raise_error(RuntimeError)
   end
-
 end
