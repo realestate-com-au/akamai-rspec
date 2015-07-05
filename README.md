@@ -4,6 +4,8 @@ Use rspec to test your akamai configuration.
 
 ## How to use
 
+The examples in the specs folder have more details.
+
 ### Basic configuration
 To use the requests outside of matchers, you must configure your domain:
 
@@ -28,6 +30,7 @@ Requires the response code to be 301, and redirect to new
 The same as be_permanently_redirected_to, except expecting a 302
 
 #### ``` be_temporarily_redirected_to_with_trailing_slash ```
+```expect(url).to be_temporarily_redirected_with_trailing_slash```
 The same as be_temporarily_redirected_to, but also expect the response location to have a '/' added
 
 #### ``` be_cacheable ```
