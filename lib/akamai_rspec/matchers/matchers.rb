@@ -6,15 +6,20 @@ require_relative 'non_akamai'
 require_relative 'honour_origin_headers'
 include AkamaiHeaders
 
-RSpec::Matchers.define :be_served_from_origin do |origin|
+RSpec::Matchers.define :x_cache_key_contains do |contents|
   match do |url|
     response = RestClient::Request.responsify url
     fail 'No X-Cache-Key header' if response.headers[:x_cache_key].nil?
-    unless response.headers[:x_cache_key].include?(origin)
-      fail("x_cache_key has value '#{response.headers[:x_cache_key]}' which doesn't include '#{origin}'")
+    unless response.headers[:x_cache_key].include?(contents)
+      fail("x_cache_key has value '#{response.headers[:x_cache_key]}' which doesn't include '#{contents}'")
     end
-    response.code == 200 && response.headers[:x_cache_key].include?(origin)
+    response.code == 200 && response.headers[:x_cache_key].include?(contents)
   end
+end
+
+module RSpec::Matchers
+  alias_method :be_served_from_origin, :x_cache_key_contains
+  alias_method :have_cp_code, :x_cache_key_contains
 end
 
 RSpec::Matchers.define :be_forwarded_to_index do |channel|
@@ -31,16 +36,5 @@ RSpec::Matchers.define :be_forwarded_to_index do |channel|
     end
     outcome_url = outcome_attribute.split('value=')[1]
     response.code == 200 && outcome_url == "#{channel}"
-  end
-end
-
-RSpec::Matchers.define :have_cp_code do |cpcode|
-  match do |response_or_url|
-    response = RestClient::Request.responsify response_or_url
-    fail('No x-cache-key header in response') if ! response.headers.keys.include?(:x_cache_key)
-    unless response.headers[:x_cache_key].include?(cpcode)
-      fail("CP Code #{cpcode} not in #{response.headers[:x_cache_key]}")
-    end
-    response.code == 200 && response.headers[:x_cache_key].include?(cpcode)
   end
 end
