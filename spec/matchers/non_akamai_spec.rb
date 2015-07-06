@@ -69,9 +69,6 @@ end
 describe 'be_verifiably_secure' do
   it 'should succeed when it verifies correctly' do
     stub_request(:any, DOMAIN).to_return(body: 'abc')
-    module OpenSSL::SSL
-      suppress_warnings { VERIFY_PEER = false }
-    end
-    expect(DOMAIN).to be_verifiably_secure
+    expect(DOMAIN).to be_verifiably_secure(false)
   end
 end

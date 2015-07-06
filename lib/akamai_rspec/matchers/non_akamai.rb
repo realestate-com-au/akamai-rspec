@@ -38,10 +38,10 @@ RSpec::Matchers.define :be_successful do
   end
 end
 
-RSpec::Matchers.define :be_verifiably_secure do
+RSpec::Matchers.define :be_verifiably_secure do (verify = OpenSSL::SSL::VERIFY_PEER)
   match do |url|
     begin
-      RestClient::Request.execute(method: :get, url: url, verify_ssl: OpenSSL::SSL::VERIFY_PEER)
+      RestClient::Request.execute(method: :get, url: url, verify_ssl: verify)
       true
     rescue => e
       raise("#{url} could not be verified as secure, :sad_panda: #{e.message}")

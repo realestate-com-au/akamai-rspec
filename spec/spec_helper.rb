@@ -19,13 +19,3 @@ def stub_redirect(status, location = '/redirected')
   stub_request(:any, DOMAIN + '/redirect').to_return(
     body: 'abc', headers: { 'Location' => DOMAIN + location }, status: [status, 'message'])
 end
-
-module Kernel
-  def suppress_warnings
-    original_verbosity = $VERBOSE
-    $VERBOSE = nil
-    result = yield
-    $VERBOSE = original_verbosity
-    return result
-  end
-end
