@@ -6,14 +6,26 @@ require_relative 'non_akamai'
 require_relative 'honour_origin_headers'
 include AkamaiHeaders
 
+X_CACHE_HEADERS = [:x_true_cache_key, :x_cache_key]
+
 RSpec::Matchers.define :be_served_from_origin do |contents|
   match do |url|
     response = RestClient::Request.responsify url
-    fail 'No X-Cache-Key header' if response.headers[:x_cache_key].nil?
-    unless response.headers[:x_cache_key] =~ /\/#{contents}\//
-      fail("x_cache_key has value '#{response.headers[:x_cache_key]}' which doesn't match '#{contents}'")
+	X_CACHE_HEADERS.each do |key|
+      header = response.headers[key]
+      return true if header && response.headers[key] =~ /\/#{contents}\//
     end
-    response.code == 200
+    X_CACHE_HEADERS.each do |key|
+      if (response.headers[key])
+        fail("#{key} has value '#{response.headers[key]}' which doesn't match '#{contents}'")
+      end
+    end
+    unless response.code == 200
+	  fail "Response code was #{response.code}, expected 200"
+	end
+    unless X_CACHE_HEADERS.inject(false) { |bool, header| bool || response.headers.include?(key) }
+      fail "Response does not contain the debug headers"
+    end
   end
 end
 
