@@ -1,10 +1,10 @@
 # akamai-rspec
 
-Use rspec to test your akamai configuration.
+Use [rspec] (http://rspec.info/) to write tests for your [akamai] (https://www.akamai.com/) configuration.
 
 ## How to use
 
-The examples in the specs folder have more details.
+The examples in the specs/functional folder have more details.
 
 ### Basic configuration
 To use the requests outside of matchers, you must configure your domain:
