@@ -19,7 +19,7 @@ end
 
 describe 'be_served_from_origin' do
   before(:each) do
-    x_cache = { 'x-cache-key' => 'origin' }
+    x_cache = { 'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/' }
     stub_headers('/correct', x_cache)
     stub_request(:any, DOMAIN + '/redirect').to_return(
       body: 'abc', headers: x_cache,
@@ -27,16 +27,21 @@ describe 'be_served_from_origin' do
   end
 
   it 'should succeed with 200 and correct origin' do
-    expect(DOMAIN + '/correct').to be_served_from_origin('origin')
+    expect(DOMAIN + '/correct').to be_served_from_origin('originsite.example.com')
   end
 
   it 'should fail on 300 and correct origin' do
-    expect { expect(DOMAIN + '/redirect').to be_served_from_origin('origin') }
+    expect { expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com') }
       .to raise_error(RuntimeError)
   end
 
   it 'should fail on 200 and incorrect origin' do
-    expect { expect(DOMAIN + '/correct').to be_served_from_origin('incorrect') }
+    expect { expect(DOMAIN + '/correct').to be_served_from_origin('someothersite.example.com') }
+      .to raise_error(RuntimeError)
+  end
+
+  it 'should fail on 200 and origin that only partially matches' do
+    expect { expect(DOMAIN + '/correct').to be_served_from_origin('site.example.com') }
       .to raise_error(RuntimeError)
   end
 end
