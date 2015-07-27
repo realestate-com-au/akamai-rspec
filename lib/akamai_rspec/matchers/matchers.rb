@@ -11,32 +11,50 @@ X_CACHE_HEADERS = [:x_true_cache_key, :x_cache_key]
 RSpec::Matchers.define :be_served_from_origin do |contents|
   match do |url|
     response = RestClient::Request.responsify url
-	X_CACHE_HEADERS.each do |key|
-      header = response.headers[key]
-      return true if header && response.headers[key] =~ /\/#{contents}\//
-    end
-    X_CACHE_HEADERS.each do |key|
-      if (response.headers[key])
-        fail("#{key} has value '#{response.headers[key]}' which doesn't match '#{contents}'")
-      end
-    end
-    unless response.code == 200
-	  fail "Response code was #{response.code}, expected 200"
-	end
-    unless X_CACHE_HEADERS.inject(false) { |bool, header| bool || response.headers.include?(key) }
-      fail "Response does not contain the debug headers"
-    end
+    return true if x_cache_headers_from_origin(response, contents)
+    missing_x_cache_error(response, contents)
+    expect(response).to be_successful
+    has_x_cache_headers(response)
   end
 end
 
 RSpec::Matchers.define :have_cp_code do |contents|
   match do |url|
     response = RestClient::Request.responsify url
-    fail 'No X-Cache-Key header' if response.headers[:x_cache_key].nil?
-    unless response.headers[:x_cache_key].include?(contents)
-      fail("x_cache_key has value '#{response.headers[:x_cache_key]}' which doesn't include '#{contents}'")
+    has_x_cache_headers(response)
+    return true if x_cache_headers_contain(response, contents)
+    missing_x_cache_error(response, contents)
+    expect(response).to be_successful
+  end
+end
+
+def has_x_cache_headers(response)
+  unless X_CACHE_HEADERS.inject(false) { |bool, header| bool || response.headers.include?(header) }
+    fail "Response does not contain the debug headers"
+  end
+end
+
+def x_cache_headers_contain(response, contents)
+  X_CACHE_HEADERS.each do |key|
+    return true if response.headers[key] && response.headers[key].include?(contents)
+  end
+  false
+end
+
+
+def x_cache_headers_from_origin(response, contents)
+  X_CACHE_HEADERS.each do |key|
+    header = response.headers[key]
+    return true if (header && header =~ /\/#{contents}\//)
+  end
+  return false
+end
+
+def missing_x_cache_error(response, contents)
+  X_CACHE_HEADERS.each do |key|
+    if (response.headers[key])
+      fail("#{key} has value '#{response.headers[key]}' which doesn't match '#{contents}'")
     end
-    response.code == 200
   end
 end
 

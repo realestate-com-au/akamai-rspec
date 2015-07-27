@@ -4,13 +4,22 @@ GEM
     addressable (2.3.8)
     byebug (4.0.5)
       columnize (= 0.9.0)
+    coderay (1.1.0)
     columnize (0.9.0)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
     diff-lcs (1.2.5)
     json (1.8.1)
+    method_source (0.8.2)
     mime-types (2.4.3)
     netrc (0.10.3)
+    pry (0.10.1)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+    pry-byebug (3.1.0)
+      byebug (~> 4.0)
+      pry (~> 0.10)
     rake (10.4.2)
     rest-client (1.7.3)
       mime-types (>= 1.16, < 3.0)
@@ -29,6 +38,7 @@ GEM
       rspec-support (~> 3.2.0)
     rspec-support (3.2.2)
     safe_yaml (1.0.4)
+    slop (3.6.0)
     webmock (1.21.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
@@ -39,6 +49,8 @@ PLATFORMS
 DEPENDENCIES
   byebug
   json
+  pry
+  pry-byebug
   rake
   rest-client (~> 1.7.2)
   rspec
