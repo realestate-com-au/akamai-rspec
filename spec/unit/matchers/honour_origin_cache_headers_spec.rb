@@ -12,10 +12,10 @@ describe 'honour_origin_cache_headers' do
     end
 
     it 'should fill in date if it is absent' do
-      pending("the code under test can't seem to change the double")
+      pending
       origin_response = double(RestClient::Response)
       allow(origin_response).to receive(:headers) { { } }
-      expect(fix_date_header(origin_response).headers[:date]).to equal(Time.now.httpdate)
+      expect(fix_date_header(origin_response).headers[:date]).to eq(Time.now.httpdate)
     end
 
   end

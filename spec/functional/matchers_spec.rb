@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 describe 'have_cp_code_set' do
   before(:each) do
     stub_headers('/correct', 'x-cache-key' => 'cp-code')
