@@ -39,12 +39,10 @@ module RestClient
       "https://#{domain}#{url}"
     end
 
-    # Define the Host header and join the Akamai headers
     def self.options
       akamai_debug_headers
     end
 
-    # Make requests to the right network
     def self.http_get(url, options, cookies = {})
       do_get(url, options, cookies, false)
     end
