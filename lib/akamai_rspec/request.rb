@@ -44,24 +44,19 @@ module RestClient
     end
 
     def self.http_get(url, options, cookies = {})
-      do_get(url, options, cookies, false)
+      get_with_debug_headers(http_url(url), options, cookies)
     end
 
     def self.https_get(url, options, cookies = {})
-      do_get(url, options, cookies, true)
+      get_with_debug_headers(https_url(url), options, cookies)
     end
 
-    def self.do_get(url, options, cookies = {}, is_secure)
-      if is_secure
-        base_url = https_url(url)
-      else
-        base_url = http_url(url)
-      end
+    def self.get_with_debug_headers(url, options, cookies = {})
       headers = options.merge(akamai_debug_headers).merge(cookies)
-      do_get_no_ssl(base_url, headers) { |response, _, _| response }
+      do_get_no_verify(url, headers) { |response, _, _| response }
     end
 
-    def self.do_get_no_ssl(url, additional_headers = {}, &block)
+    def self.do_get_no_verify(url, additional_headers = {}, &block)
       headers = (options[:headers] || {}).merge(additional_headers)
       RestClient::Request.execute(options.merge(
         method: :get,
