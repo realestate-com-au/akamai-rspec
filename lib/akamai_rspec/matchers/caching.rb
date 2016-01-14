@@ -31,7 +31,7 @@ RSpec::Matchers.define :not_be_cached do
     not_cached = response.headers[:x_cache] =~ /TCP(\w+)?_MISS/
     if not_cached
       true
-    else not_cached
+    else
       fail("x_cache header does not indicate an origin hit: '#{response.headers[:x_cache]}'")
     end
   end
