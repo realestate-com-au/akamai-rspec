@@ -18,7 +18,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
 end
 
 def fix_date_header(origin_response)
-  origin_response.headers[:date] = Time.now.httpdate unless origin_response.headers[:date]
+  origin_response.headers[:date] ||= Time.now.httpdate
   origin_response
 end
 
