@@ -20,7 +20,7 @@ describe 'have_cp_code_set' do
   end
 
   it 'should fail when both cache-key headers are not set' do
-    expect { expect(DOMAIN + '/no-cp').to have_cp_code('wrong') }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/no-cp').to have_cp_code('wrong') }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
 

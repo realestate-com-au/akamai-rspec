@@ -19,9 +19,7 @@ module AkamaiRSpec
     end
 
     def has_x_cache_headers(response)
-      unless response.headers.keys.any? { |h| X_CACHE_HEADERS.include?(h) }
-        fail "Response does not contain the debug headers"
-      end
+      response.headers.keys.any? { |h| X_CACHE_HEADERS.include?(h) }
     end
   end
 end
