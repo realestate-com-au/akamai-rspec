@@ -8,7 +8,6 @@ module AkamaiRSpec
       response = RestClient::Request.responsify url
       has_x_cache_headers(response)
       return false unless x_cache_headers_match(response, contents, match_fn)
-      missing_x_cache_error(response, contents)
       response.code == 200
     end
 
@@ -22,14 +21,6 @@ module AkamaiRSpec
     def has_x_cache_headers(response)
       unless X_CACHE_HEADERS.inject(false) { |bool, header| bool || response.headers.include?(header) }
         fail "Response does not contain the debug headers"
-      end
-    end
-
-    def missing_x_cache_error(response, contents)
-      X_CACHE_HEADERS.each do |key|
-        if (response.headers[key])
-          fail("#{key} has value '#{response.headers[key]}' which doesn't match '#{contents}'")
-        end
       end
     end
   end
