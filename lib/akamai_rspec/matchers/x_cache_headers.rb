@@ -32,8 +32,10 @@ end
 RSpec::Matchers.define :be_served_from_origin do |contents|
   include AkamaiRSpec::Helpers
   match do |url|
-    match_fn = lambda { |header, expected| header && header =~ /\/#{expected}\// }
-    have_matching_x_cache_headers(url, contents, match_fn)
+    response = RestClient::Request.responsify url
+    has_x_cache_headers(response)
+    response.headers.any? { |key, value| x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && \
+      response.code == 200
   end
 end
 
@@ -42,6 +44,7 @@ RSpec::Matchers.define :have_cp_code do |contents|
   match do |url|
     response = RestClient::Request.responsify url
     has_x_cache_headers(response)
-    response.headers.any? { |key, value| x_cache_headers.include?(key) && value == contents }
+    response.headers.any? { |key, value| x_cache_headers.include?(key) && value == contents } && \
+      response.code == 200
   end
 end
