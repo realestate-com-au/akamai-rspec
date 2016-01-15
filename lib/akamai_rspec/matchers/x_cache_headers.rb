@@ -42,12 +42,3 @@ RSpec::Matchers.define :have_cp_code do |contents|
     have_matching_x_cache_headers(url, contents, match_fn)
   end
 end
-
-RSpec::Matchers.define :have_matching_x_cache_headers do |contents, match_fn|
-  include AkamaiRSpec::Helpers
-  match do |url|
-    have_matching_x_cache_headers(url, contents, match_fn)
-  end
-end
-
-
