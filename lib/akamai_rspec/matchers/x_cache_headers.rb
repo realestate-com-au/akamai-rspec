@@ -21,6 +21,10 @@ module AkamaiRSpec
     def has_x_cache_headers(response)
       response.headers.keys.any? { |h| X_CACHE_HEADERS.include?(h) }
     end
+
+    def x_cache_headers
+      X_CACHE_HEADERS
+    end
   end
 end
 
@@ -36,7 +40,8 @@ end
 RSpec::Matchers.define :have_cp_code do |contents|
   include AkamaiRSpec::Helpers
   match do |url|
-    match_fn = lambda { |header, expected| header.include?(expected) }
-    have_matching_x_cache_headers(url, contents, match_fn)
+    response = RestClient::Request.responsify url
+    has_x_cache_headers(response)
+    response.headers.any? { |key, value| x_cache_headers.include?(key) && value == contents }
   end
 end
