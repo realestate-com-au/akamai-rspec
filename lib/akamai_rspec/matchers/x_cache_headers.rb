@@ -7,7 +7,7 @@ module AkamaiRSpec
     def have_matching_x_cache_headers(url, contents, match_fn)
       response = RestClient::Request.responsify url
       has_x_cache_headers(response)
-      return true if x_cache_headers_match(response, contents, match_fn)
+      return false unless x_cache_headers_match(response, contents, match_fn)
       missing_x_cache_error(response, contents)
       response.code == 200
     end
