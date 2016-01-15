@@ -61,4 +61,16 @@ describe RestClient::Request do
       expect(RestClient::Request.https_url(path)).to eq("https://#{prod_domain}/")
     end
   end
+
+  it 'queries the staging host' do
+    RestClient::Request.akamai_network('staging')
+    expect(Net::HTTP).to receive(:new).with(stg_domain, anything)
+    RestClient::Request.responsify 'example.com'
+  end
+
+  it 'queries the staging host' do
+    RestClient::Request.akamai_network('production')
+    expect(Net::HTTP).to receive(:new).with(prod_domain, anything)
+    RestClient::Request.responsify 'example.com'
+  end
 end
