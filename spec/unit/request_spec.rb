@@ -14,9 +14,9 @@ describe AkamaiRSpec::Request do
     stub_status(stg_domain, 200)
   end
 
-  describe '#get' do
-    subject { described_class.get(url) }
+  subject { described_class.get(url) }
 
+  describe '#get' do
     context 'prod domain' do
       it 'queries the right domain' do
         expect(Net::HTTP).to receive(:start).with(prod_domain, anything)
@@ -30,6 +30,12 @@ describe AkamaiRSpec::Request do
         expect(Net::HTTP).to receive(:start).with(stg_domain, anything)
         subject
       end
+    end
+  end
+
+  describe '#headers' do
+    it 'returns a hash' do
+      expect(subject.headers).to be_a(Hash)
     end
   end
 end

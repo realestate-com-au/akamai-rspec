@@ -35,7 +35,7 @@ module AkamaiRSpec
                 when 'staging'
                   if @@akamai_stg_domain.nil?
                     raise ArgumentError.new(
-                      "You must set the prod domain: AkamaiRSpec.akamai_prod_domain = 'www.example.com.edgesuite.net'"
+                      "You must set the prod domain: AkamaiRSpec::Request.stg_domain = 'www.example.com.edgesuite.net'"
                     )
                   end
 
@@ -43,7 +43,7 @@ module AkamaiRSpec
                 else
                   if @@akamai_prod_domain.nil?
                     raise ArgumentError.new(
-                      "You must set the prod domain: AkamaiRSpec.akamai_prod_domain = 'www.example.com.edgesuite.net'"
+                      "You must set the prod domain: AkamaiRSpec::Request.prod_domain = 'www.example.com.edgesuite.net'"
                     )
                   end
 
@@ -79,6 +79,8 @@ module AkamaiRSpec
           []
         end
       end
+
+      headers
     end
 
     def build_request(uri, headers)
