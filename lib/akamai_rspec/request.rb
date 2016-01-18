@@ -5,6 +5,9 @@ module AkamaiRSpec
   class Request
     extend Forwardable
 
+    @@akamai_stg_domain = nil
+    @@akamai_prod_domain = nil
+
     def self.stg_domain=(domain)
       @@akamai_stg_domain = domain
     end
@@ -30,8 +33,20 @@ module AkamaiRSpec
 
       @domain = case @@env.downcase
                 when 'staging'
+                  if @@akamai_stg_domain.nil?
+                    raise ArgumentError.new(
+                      "You must set the prod domain: AkamaiRSpec.akamai_prod_domain = 'www.example.com.edgesuite.net'"
+                    )
+                  end
+
                   @@akamai_stg_domain
                 else
+                  if @@akamai_prod_domain.nil?
+                    raise ArgumentError.new(
+                      "You must set the prod domain: AkamaiRSpec.akamai_prod_domain = 'www.example.com.edgesuite.net'"
+                    )
+                  end
+
                   @@akamai_prod_domain
                 end
 
