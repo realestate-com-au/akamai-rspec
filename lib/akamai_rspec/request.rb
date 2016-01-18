@@ -74,9 +74,9 @@ module AkamaiRSpec
 
     def headers
       headers = Hash[@response.to_hash.map{ |k, v| [k.gsub(/-/,'_').downcase.to_sym, v] }]
-      headers.map do |k, v|
+      headers.each do |k, v|
         if v.is_a?(Array) && v.size == 1
-          []
+          headers[k] = v.first
         end
       end
 
