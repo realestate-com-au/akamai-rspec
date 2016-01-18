@@ -16,11 +16,11 @@ describe 'have_cp_code_set' do
   end
 
   it 'should fail when cp code is wrong' do
-    expect { expect(DOMAIN + '/correct').to have_cp_code('wrong') }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/correct').to have_cp_code('wrong') }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail when both cache-key headers are not set' do
-    expect { expect(DOMAIN + '/no-cp').to have_cp_code('wrong') }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/no-cp').to have_cp_code('wrong') }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
 
@@ -45,16 +45,16 @@ describe 'be_served_from_origin' do
 
   it 'should fail on 300 and correct origin' do
     expect { expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com') }
-      .to raise_error(RuntimeError)
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail on 200 and incorrect origin' do
     expect { expect(DOMAIN + '/correct').to be_served_from_origin('someothersite.example.com') }
-      .to raise_error(RuntimeError)
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail on 200 and origin that only partially matches' do
     expect { expect(DOMAIN + '/correct').to be_served_from_origin('site.example.com') }
-      .to raise_error(RuntimeError)
+      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end

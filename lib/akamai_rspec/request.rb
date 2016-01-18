@@ -69,7 +69,12 @@ module RestClient
       if maybe_a_url.is_a? RestClient::Response
         maybe_a_url
       else
-        RestClient.get(maybe_a_url, akamai_debug_headers)
+        begin
+          RestClient.get(maybe_a_url, akamai_debug_headers)
+        rescue RestClient::RequestFailed => exception
+          # Return the original request
+          exception.response
+        end
       end
     end
 

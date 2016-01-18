@@ -72,3 +72,23 @@ describe 'be_verifiably_secure' do
     expect(DOMAIN).to be_verifiably_secure(false)
   end
 end
+
+describe 'be_forbidden' do
+  before(:each) do
+    stub_status('/success', 200)
+    stub_status('/notfound', 404)
+    stub_status('/forbidden', 403)
+  end
+
+  it 'should pass when it gets a 403' do
+    expect(DOMAIN + '/forbidden').to be_forbidden
+  end
+
+  it 'should fail when it gets 404' do
+    expect { expect(DOMAIN + '/notfound').to be_forbidden }.to raise_error(RuntimeError)
+  end
+
+  it 'should fail when it gets 200' do
+    expect { expect(DOMAIN + '/success').to be_forbidden }.to raise_error(RuntimeError)
+  end
+end

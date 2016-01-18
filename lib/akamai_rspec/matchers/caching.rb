@@ -29,10 +29,11 @@ RSpec::Matchers.define :not_be_cached do
     response = RestClient::Request.responsify response.args[:url]  # again to prevent spurious cache miss
 
     not_cached = response.headers[:x_cache] =~ /TCP(\w+)?_MISS/
-    unless not_cached
+    if not_cached
+      true
+    else
       fail("x_cache header does not indicate an origin hit: '#{response.headers[:x_cache]}'")
     end
-    response.code == 200 && not_cached
   end
 end
 
