@@ -3,7 +3,7 @@ require 'webmock/rspec'
 require 'akamai_rspec'
 
 DOMAIN = 'www.example.com.edgesuite.net'
-RestClient::Request.prod_domain(DOMAIN)
+AkamaiRSpec::Request.prod_domain = DOMAIN
 
 def stub_headers(url, headers, body = 'abc')
   stub_request(:any, DOMAIN + url).to_return(
