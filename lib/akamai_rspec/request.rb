@@ -28,6 +28,14 @@ module AkamaiRSpec
       new.get(url, AkamaiHeaders.akamai_debug_headers)
     end
 
+    def self.get_cache_miss(url)
+      url += url.include?('?') ? '&' : '?'
+      url += SecureRandom.hex
+      new.get(url, AkamaiHeaders.akamai_debug_headers)
+    end
+
+    attr_reader :response
+
     def initialize
       @@env ||= 'prod'
 
