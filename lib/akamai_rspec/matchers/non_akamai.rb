@@ -51,7 +51,7 @@ end
 
 RSpec::Matchers.define :be_gzipped do
   match do |response_or_url|
-    response = AkamaiRSpec::Request.get response_or_url
+    response = AkamaiRSpec::Request.get_decode response_or_url
     response.headers[:content_encoding] == 'gzip'
   end
 end

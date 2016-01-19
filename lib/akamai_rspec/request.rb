@@ -34,6 +34,12 @@ module AkamaiRSpec
       new.get(url, AkamaiHeaders.akamai_debug_headers)
     end
 
+    def self.get_decode(url)
+      response = new.get(url, AkamaiHeaders.akamai_debug_headers)
+      RestClient::Request.decode(response.headers[:content_encoding], response.body)
+      response
+    end
+
     def initialize
       @@env ||= 'prod'
 
