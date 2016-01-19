@@ -32,21 +32,4 @@ describe AkamaiRSpec::Request do
       end
     end
   end
-
-  describe '#headers' do
-    it 'returns a hash' do
-      expect(subject.headers).to be_a(Hash)
-    end
-
-    context 'header value is a single element array' do
-      before do
-        stub_request(:any, prod_domain).to_return(
-          body: 'abc', headers: { 'Bacon' => ['Yes'] }, status: [200, 'message'])
-      end
-
-      it 'returns a string' do
-        expect(subject.headers[:bacon]).to eq('Yes')
-      end
-    end
-  end
 end

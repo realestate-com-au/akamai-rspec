@@ -34,8 +34,6 @@ module AkamaiRSpec
       new.get(url, AkamaiHeaders.akamai_debug_headers)
     end
 
-    attr_reader :response
-
     def initialize
       @@env ||= 'prod'
 
@@ -77,18 +75,7 @@ module AkamaiRSpec
         http.request(req, nil) { |http_response| http_response }
       end
 
-      self
-    end
-
-    def headers
-      headers = Hash[@response.to_hash.map{ |k, v| [k.gsub(/-/,'_').downcase.to_sym, v] }]
-      headers.each do |k, v|
-        if v.is_a?(Array) && v.size == 1
-          headers[k] = v.first
-        end
-      end
-
-      headers
+      AkamaiRSpec::Response.new(@response)
     end
 
     def build_request(uri, headers)
