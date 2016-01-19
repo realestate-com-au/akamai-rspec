@@ -70,6 +70,11 @@ module AkamaiRSpec
     delegate [:parse_url_with_auth, :stringify_headers] => :@rest_client
 
     def get(url, headers = {})
+      if url.is_a? RestClient::Response
+        warn 'This functionality is deprecated and will be removed in the next release'
+        return AkamaiRSpec::Response.new(url)
+      end
+
       uri = parse_url_with_auth(url)
 
       req = build_request(uri, stringify_headers(headers))
