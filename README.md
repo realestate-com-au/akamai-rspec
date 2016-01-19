@@ -10,13 +10,13 @@ The examples in the specs/functional folder have more details.
 To use the requests outside of matchers, you must configure your domain:
 
 ```
-RestClient::Request.prod_domain("www.example.com.edgesuite.net")
-RestClient::Request.stg_domain("www.example.com.edgesuite-staging.net")
+AkamaiRSpec::Request.prod_domain = "www.example.com.edgesuite.net"
+AkamaiRSpec::Request.stg_domain = "www.example.com.edgesuite-staging.net"
 ```
 
 The default akamai network used is prod, to test in staging you must specify.
 ```
-RestClient::Request.akamai_network("staging")
+AkamaiRSpec::Request.akamai_network = "staging"
 ```
 
 ### matchers
