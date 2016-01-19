@@ -77,11 +77,11 @@ module AkamaiRSpec
       req['Host'] = uri.hostname
       uri.hostname = @domain
 
-      @response = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      response = Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(req, nil) { |http_response| http_response }
       end
 
-      AkamaiRSpec::Response.new(@response)
+      AkamaiRSpec::Response.new(response)
     end
 
     def build_request(uri, headers)
