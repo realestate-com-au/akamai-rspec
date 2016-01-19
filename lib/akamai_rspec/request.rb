@@ -1,5 +1,5 @@
 require 'rest-client'
-require 'delegate'
+require 'forwardable'
 
 module AkamaiRSpec
   class Request
