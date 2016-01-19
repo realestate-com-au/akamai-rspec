@@ -19,6 +19,25 @@ module AkamaiRSpec
       @response.code.to_i
     end
 
+    def cookies
+      cookie_header = headers.to_hash[:set_cookie]
+      if cookie_header
+        if cookie_header.is_a?(Array)
+          cookies_string = cookie_header.collect do |header_value|
+            header_value.split('; ')
+          end
+          cookies_string.flatten!
+          cookies_array = cookies_string.collect { |c| c.split('=') }
+        else
+          cookies_array = [cookie_header.split('=')]
+        end
+
+        Hash[cookies_array]
+      else
+        {}
+      end
+    end
+
     def method_missing(method, *args)
       @response.send(method, *args)
     end
