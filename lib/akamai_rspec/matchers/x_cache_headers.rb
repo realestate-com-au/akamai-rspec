@@ -13,7 +13,7 @@ end
 RSpec::Matchers.define :be_served_from_origin do |contents|
   include AkamaiRSpec::Helpers
   match do |url|
-    response = RestClient::Request.responsify url
+    response = AkamaiRSpec::Request.get url
     response.headers.any? { |key, value| x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && \
       response.code == 200
   end
@@ -22,7 +22,7 @@ end
 RSpec::Matchers.define :have_cp_code do |contents|
   include AkamaiRSpec::Helpers
   match do |url|
-    response = RestClient::Request.responsify url
+    response = AkamaiRSpec::Request.get url
     response.headers.any? { |key, value| x_cache_headers.include?(key) && value == contents } && \
       response.code == 200
   end
