@@ -68,7 +68,7 @@ end
 
 RSpec::Matchers.define :be_forbidden do
   match do |url|
-    response = RestClient::Request.responsify url
+    response = AkamaiRSpec::Request.get url
     fail('Response was not forbidden') unless response.code == 403
     true
   end
