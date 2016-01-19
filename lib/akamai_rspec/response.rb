@@ -15,6 +15,10 @@ module AkamaiRSpec
       headers
     end
 
+    def code
+      @response.code.to_i
+    end
+
     def method_missing(method, *args)
       @response.send(method, *args)
     end
