@@ -101,13 +101,6 @@ Expect the response to contain the specified cookie
 - Check that cache key contains Content Provider Code
 - 200 response
 
-## making requests
-```
-response = RestClient::Request::http_get(url, headers)
-response = RestClient::Request::https_get(url, headers)
-```
-Makes request to your base url that you set during initial configuration + ```url``` supplied in call.
-
 # Contributions
 We would be very thankful for any contributions, particularly documentation or tests.
 
