@@ -26,7 +26,7 @@ RSpec::Matchers.define :not_be_cached do
   match do |url|
     response = AkamaiRSpec::Request.get url
     x_check_cacheable(response, 'NO')
-    response = AkamaiRSpec::Request.get response.args[:url]  # again to prevent spurious cache miss
+    response = AkamaiRSpec::Request.get url  # again to prevent spurious cache miss
 
     not_cached = response.headers[:x_cache] =~ /TCP(\w+)?_MISS/
     if not_cached
@@ -39,7 +39,7 @@ end
 
 RSpec::Matchers.define :be_tier_distributed do
   match do |url|
-    response = AkamaiRSpec::Request.request_cache_miss(url)
+    response = AkamaiRSpec::Request.get_cache_miss(url)
     tiered = !response.headers[:x_cache_remote].nil?
     fail('No X-Cache-Remote header in response') unless tiered
     response.code == 200 && tiered
