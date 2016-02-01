@@ -9,7 +9,7 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
   fail("Headers must be one of: #{header_options}") unless header_options.include? headers
 
   match do |url|
-    akamai_response = RestClient::Request.responsify url
+    akamai_response = AkamaiRSpec::Request.get url
     origin_response = origin_response(origin)
     check_cache_control(origin_response, akamai_response, headers)
     check_expires(origin_response, akamai_response, headers)

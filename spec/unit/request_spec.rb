@@ -1,75 +1,35 @@
 require 'spec_helper'
 require 'rspec/expectations'
-require 'rest-client'
 
-describe RestClient::Request do
+describe AkamaiRSpec::Request do
   let(:stg_domain) { 'www.example.com.edgesuite-staging.net' }
   let(:prod_domain) { 'www.example.com.edgesuite.net' }
+  let(:url) { 'example.com' }
+  let(:network) { 'prod' }
   before do
-    RestClient::Request.stg_domain(stg_domain)
-    RestClient::Request.prod_domain(prod_domain)
+    AkamaiRSpec::Request.stg_domain = stg_domain
+    AkamaiRSpec::Request.prod_domain = prod_domain
+    AkamaiRSpec::Request.network = network
+    stub_status(prod_domain, 200)
+    stub_status(stg_domain, 200)
   end
 
-  describe '#domain' do
-    it 'should select staging' do
-      RestClient::Request.akamai_network('staging')
-      expect(RestClient::Request.domain).to eq(stg_domain)
+  subject { described_class.get(url) }
+
+  describe '#get' do
+    context 'prod domain' do
+      it 'queries the right domain' do
+        expect(Net::HTTP).to receive(:start).with(prod_domain, anything)
+        subject
+      end
     end
 
-    it 'should default to prod' do
-      RestClient::Request.akamai_network('not staging')
-      expect(RestClient::Request.domain).to eq(prod_domain)
-    end
-  end
-
-  describe '#http_url' do
-    it 'should succeed without leading /' do
-      path = 'something'
-      RestClient::Request.akamai_network('prod')
-      expect(RestClient::Request.http_url(path)).to eq("http://#{prod_domain}/#{path}")
-    end
-
-    it 'should succeed with a leading /' do
-      path = '/something'
-      RestClient::Request.akamai_network('prod')
-      expect(RestClient::Request.http_url(path)).to eq("http://#{prod_domain}#{path}")
-    end
-
-    it 'should succeed with an empty path' do
-      path = ''
-      RestClient::Request.akamai_network('prod')
-      expect(RestClient::Request.http_url(path)).to eq("http://#{prod_domain}/")
-    end
-  end
-
-  describe '#https_url' do
-    it 'should succeed without leading /' do
-      path = 'something'
-      RestClient::Request.akamai_network('prod')
-      expect(RestClient::Request.https_url(path)).to eq("https://#{prod_domain}/#{path}")
-    end
-
-    it 'should succeed with a leading /' do
-      path = '/something'
-      RestClient::Request.akamai_network('prod')
-      expect(RestClient::Request.https_url(path)).to eq("https://#{prod_domain}#{path}")
-    end
-
-    it 'should succeed with an empty path' do
-      path = ''
-      RestClient::Request.akamai_network('prod')
-      expect(RestClient::Request.https_url(path)).to eq("https://#{prod_domain}/")
-    end
-  end
-
-  describe '#responsify' do
-    let(:url) { 'nonexistantdomain' }
-    before do
-      stub_request(:any, url).to_return(
-        body: 'abc', status: [500, 'message'])
-    end
-    it 'should not raise an exception when a RestClient exception is raised' do
-      expect { RestClient::Request.responsify(url) }.to_not raise_error
+    context 'staging domain' do
+      let(:network) { 'staging' }
+      it 'quereis the right domain' do
+        expect(Net::HTTP).to receive(:start).with(stg_domain, anything)
+        subject
+      end
     end
   end
 end

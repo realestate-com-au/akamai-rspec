@@ -32,7 +32,7 @@ end
 
 RSpec::Matchers.define :be_successful do
   match do |url|
-    response = RestClient::Request.responsify url
+    response = AkamaiRSpec::Request.get url
     fail('Response was not successful') unless response.code == 200
     true
   end
@@ -51,14 +51,14 @@ end
 
 RSpec::Matchers.define :be_gzipped do
   match do |response_or_url|
-    response = RestClient::Request.responsify response_or_url
+    response = AkamaiRSpec::Request.get_decode response_or_url
     response.headers[:content_encoding] == 'gzip'
   end
 end
 
 RSpec::Matchers.define :have_cookie do |cookie|
   match do |response_or_url|
-    response = RestClient::Request.responsify response_or_url
+    response = AkamaiRSpec::Request.get response_or_url
     unless response.cookies[cookie]
       fail("Cookie #{cookie} not in #{response.cookies}")
     end
@@ -68,7 +68,7 @@ end
 
 RSpec::Matchers.define :be_forbidden do
   match do |url|
-    response = RestClient::Request.responsify url
+    response = AkamaiRSpec::Request.get url
     fail('Response was not forbidden') unless response.code == 403
     true
   end

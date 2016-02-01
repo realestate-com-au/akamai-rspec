@@ -10,13 +10,13 @@ The examples in the specs/functional folder have more details.
 To use the requests outside of matchers, you must configure your domain:
 
 ```
-RestClient::Request.prod_domain("www.example.com.edgesuite.net")
-RestClient::Request.stg_domain("www.example.com.edgesuite-staging.net")
+AkamaiRSpec::Request.prod_domain = "www.example.com.edgesuite.net"
+AkamaiRSpec::Request.stg_domain = "www.example.com.edgesuite-staging.net"
 ```
 
 The default akamai network used is prod, to test in staging you must specify.
 ```
-RestClient::Request.akamai_network("staging")
+AkamaiRSpec::Request.akamai_network = "staging"
 ```
 
 ### matchers
@@ -39,8 +39,7 @@ response headers
 
 #### ``` have_no_cache_set ```
 ```
-response = RestClient.get(url)
-expect(response).to have_no_cache_set
+expect(url).to have_no_cache_set
 ```
 Check that the header ```Cache-control = no-cache```
 
@@ -51,9 +50,7 @@ Requests the resource twice, and check that the 'x-cache' header says miss, and 
 
 #### ``` be_successful ```
 ```
-response = RestClient.get(url)
 expect(url).to be_successful
-expect(response).to be_successful
 ```
 
 expect a response code of 200
@@ -81,7 +78,7 @@ Check that akamai and origin cache headers correspond, and takes in to account e
 - Response code is 200
 
 #### ``` be_tier_distributed ```
-```expect(response).to be_tier_distributed```
+```expect(url).to be_tier_distributed```
 
 Forces a cache miss with a query string and checks that 'x_cache_remote' header is set.
 
@@ -91,9 +88,9 @@ Forces a cache miss with a query string and checks that 'x_cache_remote' header 
 Expect the response to be gzipped.
 
 #### ``` have_cookie ```
-```expect(response).to have_cookie cookie```
+```expect(url).to have_cookie cookie```
 
-Expect the response to contain the specified cookie
+Expect the url to contain the specified cookie
 
 #### ``` have_cp_code ```
 ```expect(url).to have_cp_code(cp_code)```
@@ -101,12 +98,13 @@ Expect the response to contain the specified cookie
 - Check that cache key contains Content Provider Code
 - 200 response
 
-## making requests
-```
-response = RestClient::Request::http_get(url, headers)
-response = RestClient::Request::https_get(url, headers)
-```
-Makes request to your base url that you set during initial configuration + ```url``` supplied in call.
+### Deprecated syntax
+
+Passing the response to the expectation.
+
+#### ``` have_cookie ```
+```expect(response).to have_cookie cookie```
+
 
 # Contributions
 We would be very thankful for any contributions, particularly documentation or tests.
