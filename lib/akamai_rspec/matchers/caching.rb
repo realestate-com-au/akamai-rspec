@@ -26,7 +26,7 @@ RSpec::Matchers.define :not_be_cached do
   match do |url|
     response = AkamaiRSpec::Request.get_with_debug_headers url
     x_check_cacheable(response, 'NO')
-    response = AkamaiRSpec::Request.get url  # again to prevent spurious cache miss
+    response = AkamaiRSpec::Request.get_with_debug_headers url  # again to prevent spurious cache miss
 
     not_cached = response.headers[:x_cache] =~ /TCP(\w+)?_MISS/
     if not_cached
