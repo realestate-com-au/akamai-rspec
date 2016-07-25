@@ -16,7 +16,7 @@ AkamaiRSpec::Request.stg_domain = "www.example.com.edgesuite-staging.net"
 
 The default akamai network used is prod, to test in staging you must specify.
 ```
-AkamaiRSpec::Request.akamai_network = "staging"
+AkamaiRSpec::Request.network = "staging"
 ```
 
 ### matchers
