@@ -21,7 +21,7 @@ describe AkamaiRSpec::Request do
   describe '#get' do
     context 'prod domain' do
       it 'queries the right domain' do
-        expect(Net::HTTP).to receive(:start).with(prod_domain, anything)
+        expect(Net::HTTP).to receive(:new).with(prod_domain, anything).and_call_original
         subject
       end
     end
@@ -29,7 +29,7 @@ describe AkamaiRSpec::Request do
     context 'staging domain' do
       let(:network) { 'staging' }
       it 'quereis the right domain' do
-        expect(Net::HTTP).to receive(:start).with(stg_domain, anything)
+        expect(Net::HTTP).to receive(:new).with(stg_domain, anything).and_call_original
         subject
       end
     end

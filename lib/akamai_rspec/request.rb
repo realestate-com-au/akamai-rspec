@@ -82,9 +82,12 @@ module AkamaiRSpec
       req['Host'] = uri.hostname
       uri.hostname = @domain
 
-      response = Net::HTTP.start(uri.hostname, uri.port) do |http|
-        http.request(req, nil) { |http_response| http_response }
+      net = Net::HTTP.new(uri.hostname, uri.port)
+      if uri.scheme == 'https'
+        net.use_ssl = true
+        net.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
+      response = net.request(req, nil)
 
       AkamaiRSpec::Response.new(response)
     end
