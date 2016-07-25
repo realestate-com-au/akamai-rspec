@@ -10,8 +10,10 @@ describe AkamaiRSpec::Request do
     AkamaiRSpec::Request.stg_domain = stg_domain
     AkamaiRSpec::Request.prod_domain = prod_domain
     AkamaiRSpec::Request.network = network
-    stub_status(prod_domain, 200)
-    stub_status(stg_domain, 200)
+    stub_request(:any, stg_domain).to_return(
+                  body: 'abc', status: [200, 'message'])
+    stub_request(:any, prod_domain).to_return(
+                  body: 'abc', status: [200, 'message'])
   end
 
   subject { described_class.get(url) }
