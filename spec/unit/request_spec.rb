@@ -10,8 +10,10 @@ describe AkamaiRSpec::Request do
     AkamaiRSpec::Request.stg_domain = stg_domain
     AkamaiRSpec::Request.prod_domain = prod_domain
     AkamaiRSpec::Request.network = network
-    stub_status(prod_domain, 200)
-    stub_status(stg_domain, 200)
+    stub_request(:any, stg_domain).to_return(
+                  body: 'abc', status: [200, 'message'])
+    stub_request(:any, prod_domain).to_return(
+                  body: 'abc', status: [200, 'message'])
   end
 
   subject { described_class.get(url) }
@@ -19,7 +21,7 @@ describe AkamaiRSpec::Request do
   describe '#get' do
     context 'prod domain' do
       it 'queries the right domain' do
-        expect(Net::HTTP).to receive(:start).with(prod_domain, anything)
+        expect(Net::HTTP).to receive(:new).with(prod_domain, anything).and_call_original
         subject
       end
     end
@@ -27,7 +29,7 @@ describe AkamaiRSpec::Request do
     context 'staging domain' do
       let(:network) { 'staging' }
       it 'quereis the right domain' do
-        expect(Net::HTTP).to receive(:start).with(stg_domain, anything)
+        expect(Net::HTTP).to receive(:new).with(stg_domain, anything).and_call_original
         subject
       end
     end
