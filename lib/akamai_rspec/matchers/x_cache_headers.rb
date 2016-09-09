@@ -7,6 +7,11 @@ module AkamaiRSpec
     def x_cache_headers
       X_CACHE_HEADERS
     end
+
+    def served_from_origin?(response, contents)
+      response.headers.any? { |key, value|
+        x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && response.code == 200
+    end
   end
 end
 
@@ -14,8 +19,14 @@ RSpec::Matchers.define :be_served_from_origin do |contents|
   include AkamaiRSpec::Helpers
   match do |url|
     response = AkamaiRSpec::Request.get url
-    response.headers.any? { |key, value| x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && \
-      response.code == 200
+    served_from_origin?(response, contents)
+  end
+end
+
+RSpec::Matchers.define :response_be_served_from_origin do |contents|
+  include AkamaiRSpec::Helpers
+  match do |response|
+    served_from_origin?(response, contents)
   end
 end
 
