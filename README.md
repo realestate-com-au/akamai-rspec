@@ -64,7 +64,7 @@ The SSL cert can be verified
 #### ``` be_served_from_origin ```
 ```expect(url).to be_served_from_origin(origin, custom_headers)```
 
-`custom_headers` is optional
+`custom_headers` is optional, but it should be a Hash when you want to specify it.
 
 Response code is 200 and 'x_cache_key' header to include origin url
 

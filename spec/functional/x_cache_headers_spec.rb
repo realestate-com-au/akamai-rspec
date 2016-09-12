@@ -48,8 +48,8 @@ describe 'be_served_from_origin' do
     net_http_res = double('response',
                            :to_hash => {
                                "Status" => ["200 OK"],
-                               'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/',
-                               'x-true-cache-key' => 'A/B/1234/123456/000/originsite.example.com/'
+                               'x-cache-key' => ['A/B/1234/123456/000/originsite.example.com/'],
+                               'x-true-cache-key' => ['A/B/1234/123456/000/originsite.example.com/']
                            },
                            :code => 200)
     request = double('http request', :user => nil, :password => nil, :url => "")
