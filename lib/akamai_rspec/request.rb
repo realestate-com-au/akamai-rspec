@@ -20,8 +20,8 @@ module AkamaiRSpec
       @@env = env
     end
 
-    def self.get(url, customer_headers={})
-      new.get(url, AkamaiHeaders.akamai_debug_headers.merge(customer_headers))
+    def self.get(url, custom_headers={})
+      new.get(url, AkamaiHeaders.akamai_debug_headers.merge(custom_headers))
     end
 
     def self.get_with_debug_headers(url)
@@ -73,6 +73,10 @@ module AkamaiRSpec
       if url.is_a? RestClient::Response
         warn 'This functionality is deprecated and will be removed in the next release'
         return AkamaiRSpec::Response.new(url)
+      end
+
+      if url.is_a? AkamaiRSpec::Response
+        return url
       end
 
       uri = parse_url_with_auth(url)
