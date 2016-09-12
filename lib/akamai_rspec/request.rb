@@ -71,7 +71,6 @@ module AkamaiRSpec
 
     def get(url, headers = {})
       if url.is_a? RestClient::Response
-        warn 'This functionality is deprecated and will be removed in the next release'
         return AkamaiRSpec::Response.new(url)
       end
 
