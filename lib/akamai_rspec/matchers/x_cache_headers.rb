@@ -13,7 +13,7 @@ end
 RSpec::Matchers.define :be_served_from_origin do |*expected_with_custom_headers|
   include AkamaiRSpec::Helpers
   match do |url|
-    custom_headers = expected_with_custom_headers.size==2? expected_with_custom_headers[1]: nil
+    custom_headers = expected_with_custom_headers.size==2? expected_with_custom_headers[1]: {}
     contents = expected_with_custom_headers[0]
     response = AkamaiRSpec::Request.get(url, custom_headers)
     response.headers.any? { |key, value| x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && \
