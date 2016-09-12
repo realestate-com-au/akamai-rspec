@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'rest-client'
 
 describe 'have_cp_code_set' do
   before(:each) do
@@ -26,13 +27,13 @@ end
 
 describe 'be_served_from_origin' do
   before(:each) do
-    x_cache = { 'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/' }
-    x_true_cache = { 'x-true-cache-key' => 'A/B/1234/123456/000/originsite.example.com/' }
+    x_cache = {'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/'}
+    x_true_cache = {'x-true-cache-key' => 'A/B/1234/123456/000/originsite.example.com/'}
     stub_headers('/correct', x_cache)
     stub_headers('/correct-true', x_true_cache)
     stub_request(:any, DOMAIN + '/redirect').to_return(
-      body: 'abc', headers: x_cache,
-      status: [300, 'message'])
+        body: 'abc', headers: x_cache,
+        status: [300, 'message'])
   end
 
   it 'should succeed with 200 and correct origin in x-cache-key' do
@@ -43,18 +44,31 @@ describe 'be_served_from_origin' do
     expect(DOMAIN + '/correct-true').to be_served_from_origin('originsite.example.com')
   end
 
+  it 'should succeed with response with 200 status and correct origin in x-true-cache-key' do
+    net_http_res = double('response',
+                           :to_hash => {
+                               "Status" => ["200 OK"],
+                               'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/',
+                               'x-true-cache-key' => 'A/B/1234/123456/000/originsite.example.com/'
+                           },
+                           :code => 200)
+    request = double('http request', :user => nil, :password => nil, :url => "")
+    response = RestClient::Response.create({}, net_http_res, {}, request)
+    expect(response).to be_served_from_origin('originsite.example.com')
+  end
+
   it 'should fail on 300 and correct origin' do
     expect { expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com') }
-      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail on 200 and incorrect origin' do
     expect { expect(DOMAIN + '/correct').to be_served_from_origin('someothersite.example.com') }
-      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail on 200 and origin that only partially matches' do
     expect { expect(DOMAIN + '/correct').to be_served_from_origin('site.example.com') }
-      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
