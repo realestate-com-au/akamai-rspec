@@ -44,18 +44,31 @@ describe 'be_served_from_origin' do
     expect(DOMAIN + '/correct-true').to be_served_from_origin('originsite.example.com')
   end
 
-  it 'should succeed with response with 200 status and correct origin in x-true-cache-key' do
+  it 'should succeed when the response with 200 status and correct origin in x-true-cache-key' do
     net_http_res = double('response',
-                           :to_hash => {
-                               "Status" => ["200 OK"],
-                               'x-cache-key' => ['A/B/1234/123456/000/originsite.example.com/'],
-                               'x-true-cache-key' => ['A/B/1234/123456/000/originsite.example.com/']
-                           },
-                           :code => 200)
+                          :to_hash => {
+                              "Status" => ["200 OK"],
+                              'x-cache-key' => ['A/B/1234/123456/000/originsite.example.com/'],
+                              'x-true-cache-key' => ['A/B/1234/123456/000/originsite.example.com/']
+                          },
+                          :code => 200)
     request = double('http request', :user => nil, :password => nil, :url => "")
     response = RestClient::Response.create({}, net_http_res, {}, request)
     expect(response).to be_served_from_origin('originsite.example.com')
   end
+
+  it 'should fail when the response without x-true-cache-key and x-cache-key ' do
+    net_http_res = double('response',
+                          :to_hash => {
+                              "Status" => ["200 OK"]
+                          },
+                          :code => 200)
+    request = double('http request', :user => nil, :password => nil, :url => "")
+    response = RestClient::Response.create({}, net_http_res, {}, request)
+    expect { expect(response).to be_served_from_origin('originsite.example.com') }
+        .to raise_error (RSpec::Expectations::ExpectationNotMetError)
+  end
+
 
   it 'should fail on 300 and correct origin' do
     expect { expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com') }
