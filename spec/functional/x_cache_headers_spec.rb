@@ -16,12 +16,36 @@ describe 'have_cp_code_set' do
     expect(DOMAIN + '/correct-true-cache-key').to have_cp_code('cp-code')
   end
 
+  it 'should succeed when the cp code set in x-true-cache-key in the rest response' do
+    net_http_res = double('response',
+                          :to_hash => {
+                              "Status" => ["200 OK"],
+                              'x-true-cache-key' => ['cp-code']
+                          },
+                          :code => 200)
+    request = double('http request', :user => nil, :password => nil, :url => "")
+    response = RestClient::Response.create({}, net_http_res, {}, request)
+    expect(response).to have_cp_code('cp-code')
+  end
+
   it 'should fail when cp code is wrong' do
     expect { expect(DOMAIN + '/correct').to have_cp_code('wrong') }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail when both cache-key headers are not set' do
     expect { expect(DOMAIN + '/no-cp').to have_cp_code('wrong') }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+  end
+
+  it 'should fail when the rest response does not contains x-true-cache-key x-cache-key' do
+    net_http_res = double('response',
+                          :to_hash => {
+                              "Status" => ["200 OK"]
+                          },
+                          :code => 200)
+    request = double('http request', :user => nil, :password => nil, :url => "")
+    response = RestClient::Response.create({}, net_http_res, {}, request)
+    expect { expect(response).to have_cp_code('cp-code')}
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
 
