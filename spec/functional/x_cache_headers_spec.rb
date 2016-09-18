@@ -47,6 +47,19 @@ describe 'have_cp_code_set' do
     expect { expect(response).to have_cp_code('cp-code')}
         .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
+
+  it "should fail when the header 'x-true-cache-key' in the rest respone is not the expected 'cp_code'" do
+    net_http_res = double('response',
+                          :to_hash => {
+                              "Status" => ["200 OK"],
+                              'x-true-cache-key' => ['dose not expected code']
+                          },
+                          :code => 200)
+    request = double('http request', :user => nil, :password => nil, :url => "")
+    response = RestClient::Response.create({}, net_http_res, {}, request)
+    expect { expect(response).to have_cp_code('cp-code')}
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+  end
 end
 
 describe 'be_served_from_origin' do
@@ -93,6 +106,18 @@ describe 'be_served_from_origin' do
         .to raise_error (RSpec::Expectations::ExpectationNotMetError)
   end
 
+  it "should fail when the header 'x-true-cache-key' in response does not contains expected origin" do
+    net_http_res = double('response',
+                          :to_hash => {
+                              "Status" => ["200 OK"],
+                              "x-true-cache-key" => ['A/B/1234/123456/000/does not expect.example.com/']
+                          },
+                          :code => 200)
+    request = double('http request', :user => nil, :password => nil, :url => "")
+    response = RestClient::Response.create({}, net_http_res, {}, request)
+    expect { expect(response).to be_served_from_origin('originsite.example.com') }
+        .to raise_error (RSpec::Expectations::ExpectationNotMetError)
+  end
 
   it 'should fail on 300 and correct origin' do
     expect { expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com') }
