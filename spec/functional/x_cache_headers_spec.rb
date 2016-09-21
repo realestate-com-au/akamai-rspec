@@ -16,15 +16,8 @@ describe 'have_cp_code_set' do
     expect(DOMAIN + '/correct-true-cache-key').to have_cp_code('cp-code')
   end
 
-  it 'should succeed when the cp code set in x-true-cache-key in the rest response' do
-    net_http_res = double('response',
-                          :to_hash => {
-                              "Status" => ["200 OK"],
-                              'x-true-cache-key' => ['cp-code']
-                          },
-                          :code => 200)
-    request = double('http request', :user => nil, :password => nil, :url => "")
-    response = RestClient::Response.create({}, net_http_res, {}, request)
+  it 'should succeed when the cp code set in x-true-cache-key in the response' do
+    response= RestClient.get("http://#{DOMAIN}/correct-true-cache-key")
     expect(response).to have_cp_code('cp-code')
   end
 
