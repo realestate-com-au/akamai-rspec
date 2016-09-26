@@ -29,7 +29,7 @@ describe 'have_cp_code_set' do
     expect { expect(DOMAIN + '/no-cp').to have_cp_code('wrong') }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
-  it 'should fail when the rest response does not contains x-true-cache-key x-cache-key' do
+  it 'should fail when the response does not contain the cache key' do
     net_http_res = double('response',
                           :to_hash => {
                               "Status" => ["200 OK"]
@@ -74,7 +74,7 @@ describe 'be_served_from_origin' do
     expect(DOMAIN + '/correct-true').to be_served_from_origin('originsite.example.com')
   end
 
-  it 'should succeed when the response with 200 status and correct origin in x-true-cache-key' do
+  it 'should succeed when it was served from the correct origin' do
     net_http_res = double('response',
                           :to_hash => {
                               "Status" => ["200 OK"],
@@ -87,7 +87,7 @@ describe 'be_served_from_origin' do
     expect(response).to be_served_from_origin('originsite.example.com')
   end
 
-  it 'should fail when the response without x-true-cache-key and x-cache-key ' do
+  it 'should fail when the response does not specify the origin' do
     net_http_res = double('response',
                           :to_hash => {
                               "Status" => ["200 OK"]
