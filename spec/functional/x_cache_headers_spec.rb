@@ -17,7 +17,7 @@ describe 'have_cp_code_set' do
   end
 
   it 'should succeed when the cp code set in x-true-cache-key in the response' do
-    response= RestClient.get("http://#{DOMAIN}/correct-true-cache-key")
+    response = RestClient.get("http://#{DOMAIN}/correct-true-cache-key")
     expect(response).to have_cp_code('cp-code')
   end
 
@@ -30,26 +30,18 @@ describe 'have_cp_code_set' do
   end
 
   it 'should fail when the response does not contain the cache key' do
-    net_http_res = double('response',
-                          :to_hash => {
-                              'Status' => ['200 OK']
-                          },
-                          :code => 200)
-    request = double('http request', :user => nil, :password => nil, :url => '')
-    response = RestClient::Response.create({}, net_http_res, {}, request)
+    stub_status('/no-cache-key', '200 OK')
+    response = RestClient.get("http://#{DOMAIN}/no-cache-key")
     expect { expect(response).to have_cp_code('cp-code') }
         .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
-  it 'should fail when the header \'x-true-cache-key\' in the rest respone is not the expected \'cp_code\'' do
-    net_http_res = double('response',
-                          :to_hash => {
-                              'Status' => ['200 OK'],
-                              'x-true-cache-key' => ['dose not expected code']
-                          },
-                          :code => 200)
-    request = double('http request', :user => nil, :password => nil, :url => '')
-    response = RestClient::Response.create({}, net_http_res, {}, request)
+  it 'should fail when the header \'x-true-cache-key\' in response is unexpected' do
+    stub_headers('/unexpected-true-cache-key', {
+        'Status' => ['200 OK'],
+        'x-true-cache-key' => ['dose not expected code']
+    })
+    response = RestClient.get("http://#{DOMAIN}/unexpected-true-cache-key")
     expect { expect(response).to have_cp_code('cp-code') }
         .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
@@ -75,39 +67,28 @@ describe 'be_served_from_origin' do
   end
 
   it 'should succeed when it was served from the correct origin' do
-    net_http_res = double('response',
-                          :to_hash => {
-                              'Status' => ['200 OK'],
-                              'x-cache-key' => ['A/B/1234/123456/000/originsite.example.com/'],
-                              'x-true-cache-key' => ['A/B/1234/123456/000/originsite.example.com/']
-                          },
-                          :code => 200)
-    request = double('http request', :user => nil, :password => nil, :url => '')
-    response = RestClient::Response.create({}, net_http_res, {}, request)
+    stub_headers('/correct-origin', {
+        'Status' => ['200 OK'],
+        'x-cache-key' => ['A/B/1234/123456/000/originsite.example.com/'],
+        'x-true-cache-key' => ['A/B/1234/123456/000/originsite.example.com/']
+    })
+    response = RestClient.get("http://#{DOMAIN}/correct-origin")
     expect(response).to be_served_from_origin('originsite.example.com')
   end
 
   it 'should fail when the response does not specify the origin' do
-    net_http_res = double('response',
-                          :to_hash => {
-                              'Status' => ['200 OK']
-                          },
-                          :code => 200)
-    request = double('http request', :user => nil, :password => nil, :url => '')
-    response = RestClient::Response.create({}, net_http_res, {}, request)
+    stub_status('/origin-unspecified', 200)
+    response = RestClient.get("http://#{DOMAIN}/origin-unspecified")
     expect { expect(response).to be_served_from_origin('originsite.example.com') }
         .to raise_error (RSpec::Expectations::ExpectationNotMetError)
   end
 
   it 'should fail when the header \'x-true-cache-key\' in response does not contains expected origin' do
-    net_http_res = double('response',
-                          :to_hash => {
-                              'Status' => ['200 OK'],
-                              'x-true-cache-key' => ['A/B/1234/123456/000/does not expect.example.com/']
-                          },
-                          :code => 200)
-    request = double('http request', :user => nil, :password => nil, :url => '')
-    response = RestClient::Response.create({}, net_http_res, {}, request)
+    stub_headers('/unexpected-origin', {
+        'Status' => ['200 OK'],
+        'x-true-cache-key' => ['A/B/1234/123456/000/does not expect.example.com/']
+    })
+    response = RestClient.get("http://#{DOMAIN}/unexpected-origin")
     expect { expect(response).to be_served_from_origin('originsite.example.com') }
         .to raise_error (RSpec::Expectations::ExpectationNotMetError)
   end
