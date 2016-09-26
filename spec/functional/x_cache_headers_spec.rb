@@ -49,8 +49,8 @@ end
 
 describe 'be_served_from_origin' do
   before(:each) do
-    x_cache = {'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/'}
-    x_true_cache = {'x-true-cache-key' => 'A/B/1234/123456/000/originsite.example.com/'}
+    x_cache = { 'x-cache-key' => 'A/B/1234/123456/000/originsite.example.com/' }
+    x_true_cache = { 'x-true-cache-key' => 'A/B/1234/123456/000/originsite.example.com/' }
     stub_headers('/correct', x_cache)
     stub_headers('/correct-true', x_true_cache)
     stub_request(:any, DOMAIN + '/redirect').to_return(
