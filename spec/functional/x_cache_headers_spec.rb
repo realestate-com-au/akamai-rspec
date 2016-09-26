@@ -38,7 +38,6 @@ describe 'have_cp_code_set' do
 
   it 'should fail when the header \'x-true-cache-key\' in response is unexpected' do
     stub_headers('/unexpected-true-cache-key', {
-        'Status' => ['200 OK'],
         'x-true-cache-key' => ['dose not expected code']
     })
     response = RestClient.get("http://#{DOMAIN}/unexpected-true-cache-key")
@@ -68,7 +67,6 @@ describe 'be_served_from_origin' do
 
   it 'should succeed when it was served from the correct origin' do
     stub_headers('/correct-origin', {
-        'Status' => ['200 OK'],
         'x-cache-key' => ['A/B/1234/123456/000/originsite.example.com/'],
         'x-true-cache-key' => ['A/B/1234/123456/000/originsite.example.com/']
     })
@@ -85,7 +83,6 @@ describe 'be_served_from_origin' do
 
   it 'should fail when the header \'x-true-cache-key\' in response does not contains expected origin' do
     stub_headers('/unexpected-origin', {
-        'Status' => ['200 OK'],
         'x-true-cache-key' => ['A/B/1234/123456/000/does not expect.example.com/']
     })
     response = RestClient.get("http://#{DOMAIN}/unexpected-origin")
