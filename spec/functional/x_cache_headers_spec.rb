@@ -37,7 +37,7 @@ describe 'have_cp_code_set' do
                           :code => 200)
     request = double('http request', :user => nil, :password => nil, :url => "")
     response = RestClient::Response.create({}, net_http_res, {}, request)
-    expect { expect(response).to have_cp_code('cp-code')}
+    expect { expect(response).to have_cp_code('cp-code') }
         .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
@@ -50,7 +50,7 @@ describe 'have_cp_code_set' do
                           :code => 200)
     request = double('http request', :user => nil, :password => nil, :url => "")
     response = RestClient::Response.create({}, net_http_res, {}, request)
-    expect { expect(response).to have_cp_code('cp-code')}
+    expect { expect(response).to have_cp_code('cp-code') }
         .to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 end
