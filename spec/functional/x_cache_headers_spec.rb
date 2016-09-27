@@ -81,7 +81,7 @@ describe 'be_served_from_origin' do
         .to raise_error (RSpec::Expectations::ExpectationNotMetError)
   end
 
-  it 'should fail when the header \'x-true-cache-key\' in response does not contains expected origin' do
+  it 'should fail when the header \'x-true-cache-key\' in response does not contain expected origin' do
     stub_headers('/unexpected-origin', {
         'x-true-cache-key' => ['A/B/1234/123456/000/does not expect.example.com/']
     })
