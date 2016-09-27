@@ -20,8 +20,8 @@ module AkamaiRSpec
       @@env = env
     end
 
-    def self.get(url)
-      new.get(url)
+    def self.get(url, custom_headers={})
+      new.get(url, AkamaiHeaders.akamai_debug_headers.merge(custom_headers))
     end
 
     def self.get_with_debug_headers(url)
