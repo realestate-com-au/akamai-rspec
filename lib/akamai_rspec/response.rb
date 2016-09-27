@@ -5,11 +5,7 @@ module AkamaiRSpec
     end
 
     def headers
-      if @response.is_a? RestClient::Response
-        headers = Hash[@response.headers.to_hash.map{ |k, v| [k.to_s.gsub(/-/,'_').downcase.to_sym, v] }]
-      else
-        headers = Hash[@response.to_hash.map{ |k, v| [k.gsub(/-/,'_').downcase.to_sym, v] }]
-      end
+      headers = Hash[@response.to_hash.map{ |k, v| [k.gsub(/-/,'_').downcase.to_sym, v] }]
       headers.each do |k, v|
         if v.is_a?(Array) && v.size == 1
           headers[k] = v.first
