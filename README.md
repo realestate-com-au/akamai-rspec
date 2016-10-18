@@ -59,7 +59,7 @@ expect a response code of 200
 #### ``` be_verifiably_secure ```
 ```expect(url).to be_verifiably_secure```
 
-The SSL cert can be verified
+The SSL cert can be verified. HTTP is either unavailable, or redirects to HTTPS.
 
 #### ``` be_served_from_origin ```
 ```expect(url).to be_served_from_origin origin```
