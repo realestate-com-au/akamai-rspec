@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.name        = 'akamai_rspec'
   s.version     = '0.3.0'
   s.authors     = ['Bianca Gibson']
-  s.email       = 'bianca.gibson@rea-group.com'
+  s.email       = 'cobweb@rea-group.com'
   s.files       = Dir['lib/*']
   s.summary     = 'Test your akamai configuration with rspec'
   s.description = 'Test your akamai configuration with rspec'
