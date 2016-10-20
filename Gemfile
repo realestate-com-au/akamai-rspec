@@ -1,10 +1,11 @@
 source 'https://rubygems.org'
 
-gem 'rest-client'
-gem 'rspec'
-gem 'rake'
-gem 'byebug'
-gem 'json'
-gem 'webmock'
-gem 'pry'
-gem 'pry-byebug'
+gemspec
+
+group :development do
+  gem 'rake'
+  gem 'byebug'
+  gem 'webmock'
+  gem 'pry'
+  gem 'pry-byebug'
+end
