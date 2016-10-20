@@ -1,7 +1,7 @@
 # akamai-rspec
 [![Build Status](https://travis-ci.org/realestate-com-au/akamai-rspec.svg?branch=master)](https://travis-ci.org/realestate-com-au/akamai-rspec)
 
-Use [rspec] (http://rspec.info/) to write tests for your [akamai] (https://www.akamai.com/) configuration.
+Use [rspec](http://rspec.info/) to write tests for your [akamai](https://www.akamai.com/) configuration.
 
 ## How to use
 
