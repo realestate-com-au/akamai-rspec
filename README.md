@@ -1,7 +1,7 @@
 # akamai-rspec
 [![Build Status](https://travis-ci.org/realestate-com-au/akamai-rspec.svg?branch=master)](https://travis-ci.org/realestate-com-au/akamai-rspec)
 
-Use [rspec] (http://rspec.info/) to write tests for your [akamai] (https://www.akamai.com/) configuration.
+Use [rspec](http://rspec.info/) to write tests for your [akamai](https://www.akamai.com/) configuration.
 
 ## How to use
 
@@ -34,20 +34,22 @@ The same as be_permanently_redirected_to, except expecting a 302
 ```expect(url).to be_temporarily_redirected_with_trailing_slash```
 The same as be_temporarily_redirected_to, but also expect the response location to have a '/' added
 
-#### ``` be_cacheable ```
-Requests to the url with the akamai debug headers should have X-Check-Cacheable as yes in the
-response headers
+#### ``` be_cacheable ``` (alias: ``` be_cachable ```, ``` be_cached ```)
+Requests the resource repeatedly and checks that the 'x-cache' header says 'HIT'.
+Raises an error unless the response code is 200.
+
+Previous versions used X-Check-Cacheable, but this has some awkward/misleading edge cases.
+Sources: [akamai forums](https://community.akamai.com/thread/1987) and [docs (requires login; see p22)]( https://control.akamai.com/dl/customers/other/EDGESERV/ESN-User-Guide.pdf ).
+
+#### ``` not_be_cached ```
+```expect(url).to not_be_cached```
+Equivalent to ```expect(url).not_to be_cached```
 
 #### ``` have_no_cache_set ```
 ```
 expect(url).to have_no_cache_set
 ```
 Check that the header ```Cache-control = no-cache```
-
-#### ``` not_be_cached ```
-```expect(url).to not_be_cached```
-
-Requests the resource twice, and check that the 'x-cache' header says miss, and response code is 200
 
 #### ``` be_successful ```
 ```
@@ -59,7 +61,7 @@ expect a response code of 200
 #### ``` be_verifiably_secure ```
 ```expect(url).to be_verifiably_secure```
 
-The SSL cert can be verified
+The SSL cert can be verified. HTTP is either unavailable, or redirects to HTTPS.
 
 #### ``` be_served_from_origin ```
 ```expect(url).to be_served_from_origin origin```

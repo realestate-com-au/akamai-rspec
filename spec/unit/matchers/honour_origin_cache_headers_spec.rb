@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'rspec/expectations'
 require 'rest-client'
-require 'byebug'
 
 describe 'honour_origin_cache_headers' do
   context 'fix_date_header' do

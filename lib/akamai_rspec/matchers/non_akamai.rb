@@ -1,6 +1,7 @@
 require 'rspec'
 require 'socket'
 require 'openssl'
+require 'uri'
 
 def check_ssl_serial(addr, port, url, serial)
   cert_serial = ssl_cert(addr, port, url).serial.to_s(16).upcase
@@ -40,11 +41,13 @@ end
 
 RSpec::Matchers.define :be_verifiably_secure do (verify = OpenSSL::SSL::VERIFY_PEER)
   match do |url|
+    return false if URI(url).scheme == "http"
+    url = "https://#{url}" unless URI(url).scheme
     begin
       RestClient::Request.execute(method: :get, url: url, verify_ssl: verify)
-      true
+      return true
     rescue => e
-      raise("#{url} could not be verified as secure, :sad_panda: #{e.message}")
+      return false
     end
   end
 end

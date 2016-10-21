@@ -67,9 +67,24 @@ describe 'have_cookie' do
 end
 
 describe 'be_verifiably_secure' do
-  it 'should succeed when it verifies correctly' do
-    stub_request(:any, DOMAIN).to_return(body: 'abc')
-    expect(DOMAIN).to be_verifiably_secure(false)
+  describe 'verifying a URL with the http protocol' do
+    it 'fails' do
+      expect("http://#{DOMAIN}").not_to be_verifiably_secure(false)
+    end
+  end
+
+  describe 'verifying a URL with no protocol' do
+    it "attempts to connect via https" do
+      stub_request(:any, "https://#{DOMAIN}").to_return(body: 'abc')
+      expect(DOMAIN).to be_verifiably_secure(false)
+    end
+  end
+
+  describe 'verifying a URL with the https protocol' do
+    it "succeeds when it verifies correctly" do
+      stub_request(:any, "https://#{DOMAIN}").to_return(body: 'abc')
+      expect("https://#{DOMAIN}").to be_verifiably_secure(false)
+    end
   end
 end
 
