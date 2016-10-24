@@ -24,14 +24,14 @@ module AkamaiRSpec
       new.get(url, headers)
     end
 
-    def self.get_with_debug_headers(url)
-      new.get(url, AkamaiHeaders.akamai_debug_headers)
+    def self.get_with_debug_headers(url, headers={})
+      new.get(url, headers.merge(AkamaiHeaders.akamai_debug_headers))
     end
 
     def self.get_cache_miss(url)
       url += url.include?('?') ? '&' : '?'
       url += SecureRandom.hex
-      new.get(url, AkamaiHeaders.akamai_debug_headers)
+      get_with_debug_headers(url)
     end
 
     def self.get_decode(url)
