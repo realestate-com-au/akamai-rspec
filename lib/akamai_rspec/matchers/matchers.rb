@@ -5,11 +5,10 @@ require_relative 'caching'
 require_relative 'non_akamai'
 require_relative 'honour_origin_headers'
 require_relative 'x_cache_headers'
-include AkamaiHeaders
 
 RSpec::Matchers.define :be_forwarded_to_index do |channel|
   match do |url|
-    response = RestClient.get(url, akamai_debug_headers)
+    response = RestClient.get(url, AkamaiHeaders.akamai_debug_headers)
 
     session_info = response.raw_headers['x-akamai-session-info']
     if session_info.nil?
