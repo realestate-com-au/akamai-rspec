@@ -39,6 +39,16 @@ RSpec::Matchers.define :be_successful do
   end
 end
 
+RSpec::Matchers.define :respond_with_headers do |headers|
+  match do |url|
+    @response = AkamaiRSpec::Request.get url
+    headers.each do |k, v|
+      fail "Expected header #{k} to be #{v}, got #{@response.headers[k]}" unless @response.headers[k] == v
+    end
+    true
+  end
+end
+
 RSpec::Matchers.define :be_verifiably_secure do (verify = OpenSSL::SSL::VERIFY_PEER)
   match do |url|
     return false if URI(url).scheme == "http"
