@@ -42,5 +42,24 @@ module AkamaiRSpec
     def method_missing(method, *args)
       @response.send(method, *args)
     end
+
+    def to_s
+      case code
+      when 0..99
+        "Invalid status code #{code}"
+      when 100..199
+        "Status: #{code}"
+      when 200..299
+        "Success: #{code}"
+      when 300..399
+        "Redirect #{code} to #{headers[:location]}"
+      when 400..499
+        "Client error #{code}"
+      when 500..599
+        "Server error #{code}"
+      else
+        "Unknown status code #{code}"
+      end
+    end
   end
 end
