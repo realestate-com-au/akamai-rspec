@@ -73,6 +73,10 @@ RSpec::Matchers.define :be_gzipped do
     @response = AkamaiRSpec::Request.get_decode url
     @response.headers[:content_encoding] == 'gzip'
   end
+  failure_message do |url|
+    "Expected #{url} to be gzipped (got #{@response})"
+  end
+
 end
 
 RSpec::Matchers.define :have_cookie do |cookie, value=nil|
