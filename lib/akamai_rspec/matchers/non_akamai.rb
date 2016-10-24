@@ -69,9 +69,9 @@ RSpec::Matchers.define :be_verifiably_secure do (verify = OpenSSL::SSL::VERIFY_P
 end
 
 RSpec::Matchers.define :be_gzipped do
-  match do |response_or_url|
-    response = AkamaiRSpec::Request.get_decode response_or_url
-    response.headers[:content_encoding] == 'gzip'
+  match do |url|
+    @response = AkamaiRSpec::Request.get_decode url
+    @response.headers[:content_encoding] == 'gzip'
   end
 end
 
