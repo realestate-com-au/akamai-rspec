@@ -9,7 +9,10 @@ RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers=:both|
 
   match do |url|
     akamai_response = AkamaiRSpec::Request.get url
-    origin_response = origin_response(origin)
+    url = "http://" + url unless url =~ /^http/
+    origin_url = URI(url)
+    origin_url.host = URI(origin).hostname || origin
+    origin_response = origin_response(origin_url.to_s)
     check_cache_control(origin_response, akamai_response, headers)
     check_expires(origin_response, akamai_response, headers)
     true
