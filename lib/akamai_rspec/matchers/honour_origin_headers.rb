@@ -3,9 +3,8 @@ require 'set'
 require 'time'
 require 'uri'
 
-RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers|
+RSpec::Matchers.define :honour_origin_cache_headers do |origin, headers=:both|
   header_options = [:cache_control, :expires, :both]
-  headers ||= :both
   fail("Headers must be one of: #{header_options}") unless header_options.include? headers
 
   match do |url|
