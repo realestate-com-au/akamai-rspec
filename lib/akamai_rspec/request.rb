@@ -35,7 +35,7 @@ module AkamaiRSpec
     end
 
     def self.get_decode(url)
-      response = new.get(url, AkamaiHeaders.akamai_debug_headers)
+      response = new.get(url, AkamaiHeaders.akamai_debug_headers.merge({'Accept-Encoding' => 'gzip'}))
       RestClient::Request.decode(response.headers[:content_encoding], response.body)
       response
     end
