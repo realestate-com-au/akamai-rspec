@@ -70,7 +70,10 @@ module AkamaiRSpec
     delegate [:parse_url_with_auth, :stringify_headers] => :@rest_client
 
     def get(url, headers = {})
-      if url.is_a? RestClient::Response
+      # DO NOT USE url.is_a? here - some versions of
+      # the JSON gem monkey patch String which causes it to match.
+
+      if url.class.ancestors.include? RestClient::Response
         return AkamaiRSpec::Response.new(url)
       end
 
