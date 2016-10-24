@@ -30,13 +30,13 @@ RSpec::Matchers.define :have_no_cache_set do
   end
 end
 
-
 RSpec::Matchers.define :be_tier_distributed do
   match do |url|
     response = AkamaiRSpec::Request.get_cache_miss(url)
     @tiered = !response.headers[:x_cache_remote].empty?
     response.code == 200 && @tiered
   end
+
   description do
     "be tier distributed (as indicated by the presence of an X-Cache-Remote header in response)"
   end
