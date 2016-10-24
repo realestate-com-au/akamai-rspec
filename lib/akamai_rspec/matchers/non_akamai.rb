@@ -54,11 +54,17 @@ RSpec::Matchers.define :be_verifiably_secure do (verify = OpenSSL::SSL::VERIFY_P
     return false if URI(url).scheme == "http"
     url = "https://#{url}" unless URI(url).scheme
     begin
-      RestClient::Request.execute(method: :get, url: url, verify_ssl: verify)
+      # Avoid AkamaiRspec::Request as it turns off SSL checking
+      @response = RestClient::Request.execute(method: :get, url: url, verify_ssl: verify)
       return true
     rescue => e
+      @error = e
       return false
     end
+  end
+
+  failure_message do |url|
+    "got error #{@error} fetching #{@response}"
   end
 end
 
