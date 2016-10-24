@@ -1,7 +1,7 @@
 require 'rspec'
 
 module AkamaiRSpec
-  module Helpers
+  module CacheHelpers
     X_CACHE_HEADERS = [:x_true_cache_key, :x_cache_key]
 
     def x_cache_headers
@@ -11,7 +11,7 @@ module AkamaiRSpec
 end
 
 RSpec::Matchers.define :be_served_from_origin do |contents|
-  include AkamaiRSpec::Helpers
+  include AkamaiRSpec::CacheHelpers
   match do |url|
     response = AkamaiRSpec::Request.get url
     response.headers.any? { |key, value| x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && \
@@ -20,7 +20,7 @@ RSpec::Matchers.define :be_served_from_origin do |contents|
 end
 
 RSpec::Matchers.define :have_cp_code do |contents|
-  include AkamaiRSpec::Helpers
+  include AkamaiRSpec::CacheHelpers
   match do |url|
     response = AkamaiRSpec::Request.get url
     response.headers.any? { |key, value| x_cache_headers.include?(key) && value == contents } && \
