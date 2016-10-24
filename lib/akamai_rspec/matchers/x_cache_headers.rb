@@ -7,6 +7,10 @@ module AkamaiRSpec
     def x_cache_headers
       X_CACHE_HEADERS
     end
+
+    def cache_headers
+      x_cache_headers.map {|key| @response.headers[key] }
+    end
   end
 end
 
@@ -22,8 +26,15 @@ end
 RSpec::Matchers.define :have_cp_code do |contents|
   include AkamaiRSpec::CacheHelpers
   match do |url|
-    response = AkamaiRSpec::Request.get url
-    response.headers.any? { |key, value| x_cache_headers.include?(key) && value == contents } && \
-      response.code == 200
+    @response = AkamaiRSpec::Request.get_with_debug_headers url
+    @response.code == 200 && cache_headers.any? do |value|
+      value.to_s.split("/").include? contents
+    end
+  end
+
+  failure_message do |url|
+    headers = {}
+    x_cache_headers.each {|h| headers[h] = @response.headers[h] }
+    "Expected #{url} to have cp_code #{contents} but responded with #{headers.to_json}"
   end
 end
