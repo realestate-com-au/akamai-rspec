@@ -19,7 +19,7 @@ RSpec::Matchers.define :be_served_from_origin do |contents|
 
   match do |url|
     @response = AkamaiRSpec::Request.get_with_debug_headers url
-    @response.code == 200 && cache_headers.any? {|h| h.split("/").include? contents}
+    cache_headers.any? {|h| h.split("/").include? contents}
   end
 
   failure_message do |actual|

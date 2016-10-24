@@ -2,6 +2,12 @@ Change history / upgrade notes
 
 # 0.5
 
+## `be_served_from_origin` and status codes
+
+Previously, `be_served_from_origin` would follow redirects and check the last URL.
+
+It now checks the URL you specify is served from the origin you specify, and *does not* check the status code.
+
 ## Redirects & chaining
 
 Until now, most checks have followed redirects and asserted that the final result has status 200.
