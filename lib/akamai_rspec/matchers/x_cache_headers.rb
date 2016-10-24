@@ -16,10 +16,14 @@ end
 
 RSpec::Matchers.define :be_served_from_origin do |contents|
   include AkamaiRSpec::CacheHelpers
+
   match do |url|
-    response = AkamaiRSpec::Request.get url
-    response.headers.any? { |key, value| x_cache_headers.include?(key) && value =~ /\/#{contents}\// } && \
-      response.code == 200
+    @response = AkamaiRSpec::Request.get_with_debug_headers url
+    @response.code == 200 && cache_headers.any? {|h| h.split("/").include? contents}
+  end
+
+  failure_message do |actual|
+    "expected \"#{actual}\" to be served from origin \"#{contents}\"; got #{@response} and the cache headers indicated '#{cache_headers.inspect}'"
   end
 end
 
