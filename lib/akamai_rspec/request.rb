@@ -47,7 +47,7 @@ module AkamaiRSpec
                 when 'staging'
                   if @@akamai_stg_domain.nil?
                     raise ArgumentError.new(
-                      "You must set the prod domain: AkamaiRSpec::Request.stg_domain = 'www.example.com.edgesuite.net'"
+                      "You must set the staging domain: AkamaiRSpec::Request.stg_domain = 'www.example.com.edgesuite.net'"
                     )
                   end
 
