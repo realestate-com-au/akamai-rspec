@@ -20,8 +20,8 @@ module AkamaiRSpec
       @@env = env
     end
 
-    def self.get(url)
-      new.get(url)
+    def self.get(url, headers={})
+      new.get(url, headers)
     end
 
     def self.get_with_debug_headers(url)
