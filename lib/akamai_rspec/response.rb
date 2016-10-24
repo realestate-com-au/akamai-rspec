@@ -21,22 +21,13 @@ module AkamaiRSpec
     end
 
     def cookies
-      cookie_header = headers.to_hash[:set_cookie]
-      if cookie_header
-        if cookie_header.is_a?(Array)
-          cookies_string = cookie_header.collect do |header_value|
-            header_value.split('; ')
-          end
-          cookies_string.flatten!
-          cookies_array = cookies_string.collect { |c| c.split('=') }
-        else
-          cookies_array = [cookie_header.split('=')]
-        end
+      cookies = {}
 
-        Hash[cookies_array]
-      else
-        {}
+      [headers[:set_cookie]].flatten.each do |cookie|
+        name, value = cookie.split(/=/, 2)
+        cookies[name] = value
       end
+      cookies
     end
 
     def method_missing(method, *args)
