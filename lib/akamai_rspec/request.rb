@@ -77,8 +77,11 @@ module AkamaiRSpec
         return AkamaiRSpec::Response.new(url)
       end
 
-      uri = parse_url_with_auth(url)
+      if url.class.ancestors.include? AkamaiRSpec::Response
+        return url
+      end
 
+      uri = parse_url_with_auth(url)
       req = build_request(uri, stringify_headers(headers))
 
       req['Host'] = uri.hostname
