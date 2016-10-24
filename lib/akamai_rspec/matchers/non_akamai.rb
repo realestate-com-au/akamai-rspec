@@ -34,7 +34,7 @@ end
 RSpec::Matchers.define :be_successful do
   match do |url|
     response = AkamaiRSpec::Request.get url
-    fail('Response was not successful') unless response.code == 200
+    fail("Response #{response} was not successful for #{url}") unless response.code == 200
     true
   end
 end
