@@ -75,13 +75,16 @@ RSpec::Matchers.define :be_gzipped do
   end
 end
 
-RSpec::Matchers.define :have_cookie do |cookie|
+RSpec::Matchers.define :have_cookie do |cookie, value=nil|
   match do |response_or_url|
     response = AkamaiRSpec::Request.get response_or_url
     unless response.cookies[cookie]
       fail("Cookie #{cookie} not in #{response.cookies}")
     end
-    response.cookies[cookie]
+    if value && response.cookies[cookie] != value
+      fail("Cookie #{cookie} was set to #{response.cookies[cookie]}, expected #{value}")
+    end
+    !!response.cookies[cookie]
   end
 end
 
