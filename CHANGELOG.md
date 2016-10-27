@@ -29,6 +29,8 @@ If any request is a cache hit we infer that the resource is cacheable.
 Previously requests which returned 'not modified' from the backend
 would pass `be_cacheable`; you now need to use `be_cacheable(allow_refresh: true)`.
 
+Finally, `to not_be_cached` has been removed in favor of the standard
+rspec syntax `not_to be_cached`
 ## Origin cache headers
 
 Now actually contacts the upstream to determine cache headers

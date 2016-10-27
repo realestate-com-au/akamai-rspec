@@ -44,7 +44,6 @@ end
 module RSpec::Matchers
   alias_method :be_cachable, :be_cacheable
   alias_method :be_cached, :be_cacheable
-  define_negated_matcher :not_be_cached, :be_cached
 end
 
 RSpec::Matchers.define :have_no_cache_set do
