@@ -2,8 +2,8 @@ $LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'akamai_rspec'
-  s.version     = '0.4.0'
-  s.authors     = ['Bianca Gibson']
+  s.version     = "1.0.0"
+  s.authors     = ['Bianca Gibson', 'Daniel Heath']
   s.email       = 'cobweb@rea-group.com'
   s.files       = Dir['lib/*']
   s.summary     = 'Test your akamai configuration with rspec'

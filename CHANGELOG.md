@@ -1,6 +1,12 @@
 Change history / upgrade notes
 
-# 0.5
+# 1.0.0
+
+## Loading
+
+Previously all matchers were added to the global namespace when you load this gem.
+
+As of 1.0.0, you'll need to `include AkamaiRSpec::Matchers` in specs which use them (or in your global rspec config).
 
 ## `be_served_from_origin` and status codes
 

@@ -5,6 +5,10 @@ require 'akamai_rspec'
 DOMAIN = 'www.example.com.edgesuite.net'
 AkamaiRSpec::Request.prod_domain = DOMAIN
 
+RSpec.configure do
+  include AkamaiRSpec::Matchers
+end
+
 def stub_headers(url, headers, body = 'abc')
   stub_request(:any, DOMAIN + url).to_return(
     body: body, headers: headers)
