@@ -31,10 +31,10 @@ def ssl_client_for_verify_cert(tcp_client, addr, url)
   ssl_client
 end
 
-RSpec::Matchers.define :be_successful do
+RSpec::Matchers.define :be_successful do |response_codes=(200..299)|
   match do |url|
     response = AkamaiRSpec::Request.get url
-    fail("Response #{response} was not successful for #{url}") unless response.code == 200
+    fail("Response #{response} was not successful for #{url}") unless response_codes === response.code
     true
   end
 end
