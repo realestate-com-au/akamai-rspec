@@ -39,7 +39,7 @@ module AkamaiRSpec
       when 0..99
         "Invalid status code #{code}"
       when 100..199
-        "Status: #{code}"
+        "Informational: #{code}"
       when 200..299
         "Success: #{code}"
       when 300..399
