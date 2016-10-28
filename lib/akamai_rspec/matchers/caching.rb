@@ -6,7 +6,7 @@ module AkamaiRSpec
   module Matchers
     define :be_cacheable do |request_count: 4, headers: {}, allow_refresh: false|
       match do |url|
-        @responses = [1..request_count].map {
+        @responses = (1..request_count).map {
           AkamaiRSpec::Request.get url, headers
         }
 
