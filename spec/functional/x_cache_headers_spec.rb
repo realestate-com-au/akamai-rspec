@@ -43,9 +43,8 @@ describe 'be_served_from_origin' do
     expect(DOMAIN + '/correct-true').to be_served_from_origin('originsite.example.com')
   end
 
-  it 'should fail on 300 and correct origin' do
-    expect { expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com') }
-      .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+  it 'should pass on 300 and correct origin' do
+    expect(DOMAIN + '/redirect').to be_served_from_origin('originsite.example.com')
   end
 
   it 'should fail on 200 and incorrect origin' do

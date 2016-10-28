@@ -6,6 +6,15 @@ describe 'be_permanently_redirected_to' do
     stub_redirect(301)
   end
 
+  describe 'chaining' do
+    before(:each) do
+      stub_status('/redirected', 200)
+    end
+    it 'should follow redirects' do
+      expect(DOMAIN + '/redirect').to be_permanently_redirected_to(DOMAIN + '/redirected').then be_successful
+    end
+  end
+
   it 'should be successful on 301 to new' do
     expect(DOMAIN + '/redirect').to be_permanently_redirected_to(DOMAIN + '/redirected')
   end

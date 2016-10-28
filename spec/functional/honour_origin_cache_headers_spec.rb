@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 describe 'honour_origin_cache_headers' do
 
   let(:a_date_in_the_future) { 'Thu, 01 Dec 2015 07:00:00 GMT' }

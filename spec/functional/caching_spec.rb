@@ -37,11 +37,11 @@ describe 'not_be_cached' do
   end
 
   it 'should succeed when not cacheable' do
-    expect(DOMAIN + '/not_cacheable').to not_be_cached
+    expect(DOMAIN + '/not_cacheable').not_to be_cached
   end
 
   it 'should fail when cacheable but missed' do
-    expect { expect(DOMAIN + '/cacheable').to not_be_cached }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    expect { expect(DOMAIN + '/cacheable').not_to be_cached }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
   end
 
 end

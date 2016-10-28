@@ -13,7 +13,11 @@ describe 'be_successful' do
   end
 
   it 'should fail when it gets 400' do
-    expect { expect(DOMAIN + '/fail').to be_successful }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/fail').to be_successful }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+  end
+
+  it 'allows overriding the expected range' do
+    expect(DOMAIN + '/success').not_to be_successful(response_codes: 201..300)
   end
 end
 
@@ -69,21 +73,21 @@ end
 describe 'be_verifiably_secure' do
   describe 'verifying a URL with the http protocol' do
     it 'fails' do
-      expect("http://#{DOMAIN}").not_to be_verifiably_secure(false)
+      expect("http://#{DOMAIN}").not_to be_verifiably_secure
     end
   end
 
   describe 'verifying a URL with no protocol' do
     it "attempts to connect via https" do
       stub_request(:any, "https://#{DOMAIN}").to_return(body: 'abc')
-      expect(DOMAIN).to be_verifiably_secure(false)
+      expect(DOMAIN).to be_verifiably_secure
     end
   end
 
   describe 'verifying a URL with the https protocol' do
     it "succeeds when it verifies correctly" do
       stub_request(:any, "https://#{DOMAIN}").to_return(body: 'abc')
-      expect("https://#{DOMAIN}").to be_verifiably_secure(false)
+      expect("https://#{DOMAIN}").to be_verifiably_secure
     end
   end
 end
