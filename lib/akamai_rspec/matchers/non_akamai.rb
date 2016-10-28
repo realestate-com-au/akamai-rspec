@@ -7,9 +7,12 @@ module AkamaiRSpec
   module Matchers
     define :be_successful do |response_codes=(200..299)|
       match do |url|
-        response = AkamaiRSpec::Request.get url
-        fail("Response #{response} was not successful for #{url}") unless response_codes === response.code
-        true
+        @response = AkamaiRSpec::Request.get url
+        response_codes === @response.code
+      end
+
+      failure_message do |url|
+        "Response #{@response} was not successful for #{url}"
       end
     end
 

@@ -13,7 +13,11 @@ describe 'be_successful' do
   end
 
   it 'should fail when it gets 400' do
-    expect { expect(DOMAIN + '/fail').to be_successful }.to raise_error(RuntimeError)
+    expect { expect(DOMAIN + '/fail').to be_successful }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+  end
+
+  it 'allows overriding the expected range' do
+    expect(DOMAIN + '/success').not_to be_successful(response_codes: 201..300)
   end
 end
 
