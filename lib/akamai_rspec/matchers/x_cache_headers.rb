@@ -7,7 +7,7 @@ module AkamaiRSpec
       include AkamaiRSpec::Helpers::CacheHeaders
 
       match do |url|
-        @response = AkamaiRSpec::Request.get_with_debug_headers url
+        @response = AkamaiRSpec::Request.get url
         cache_headers.any? {|h| h.split("/").include? contents}
       end
 
@@ -19,7 +19,7 @@ module AkamaiRSpec
     define :have_cp_code do |contents|
       include AkamaiRSpec::Helpers::CacheHeaders
       match do |url|
-        @response = AkamaiRSpec::Request.get_with_debug_headers url
+        @response = AkamaiRSpec::Request.get url
         @response.code == 200 && cache_headers.any? do |value|
           value.to_s.split("/").include? contents
         end

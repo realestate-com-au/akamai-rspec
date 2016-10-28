@@ -1,15 +1,13 @@
 require 'rspec'
 require 'securerandom'
-require 'akamai_rspec/akamai_headers'
 require 'akamai_rspec/request'
 
 module AkamaiRSpec
   module Matchers
-
     define :be_cacheable do |request_count: 4, headers: {}, allow_refresh: false|
       match do |url|
         @responses = [1..request_count].map {
-          AkamaiRSpec::Request.new.get url, AkamaiHeaders.akamai_debug_headers.merge(headers)
+          AkamaiRSpec::Request.get url, headers
         }
 
         @responses.any? do |response|
