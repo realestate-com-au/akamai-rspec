@@ -3,11 +3,10 @@ module AkamaiRSpec
   module Matchers
     define :be_forwarded_to_index do |channel|
       match do |url|
-        response = RestClient.get(url, AkamaiHeaders.akamai_debug_headers)
-
-        session_info = response.raw_headers['x-akamai-session-info']
+        response = Request.get(url)
+        session_info = response.headers[:x_akamai_session_info]
         if session_info.nil?
-          fail("x-akamai-session-info not found in the headers '#{response.raw_headers}'")
+          fail("x-akamai-session-info not found in the headers '#{response.headers}'")
         end
         outcome_attribute = session_info.find { |header| header.include? 'AKA_PM_FWD_URL' }
         if outcome_attribute.nil?
