@@ -1,21 +1,10 @@
 require 'rspec'
+require 'akamai_rspec/helpers/cache_headers'
 
 module AkamaiRSpec
-  module CacheHelpers
-    X_CACHE_HEADERS = [:x_true_cache_key, :x_cache_key]
-
-    def x_cache_headers
-      X_CACHE_HEADERS
-    end
-
-    def cache_headers
-      x_cache_headers.map {|key| @response.headers[key] }
-    end
-  end
-
   module Matchers
     define :be_served_from_origin do |contents|
-      include AkamaiRSpec::CacheHelpers
+      include AkamaiRSpec::Helpers::CacheHeaders
 
       match do |url|
         @response = AkamaiRSpec::Request.get_with_debug_headers url
@@ -28,7 +17,7 @@ module AkamaiRSpec
     end
 
     define :have_cp_code do |contents|
-      include AkamaiRSpec::CacheHelpers
+      include AkamaiRSpec::Helpers::CacheHeaders
       match do |url|
         @response = AkamaiRSpec::Request.get_with_debug_headers url
         @response.code == 200 && cache_headers.any? do |value|
