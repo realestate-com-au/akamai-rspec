@@ -6,14 +6,20 @@ module AkamaiRSpec
   module Matchers
     define :be_cacheable do |request_count: 4, headers: {}, allow_refresh: false|
       match do |url|
+        @responses = []
+        fail("URL must be a string") unless url.is_a? String
+
         @responses = (1..request_count).map {
           AkamaiRSpec::Request.get url, headers
         }
 
         @responses.any? do |response|
           fail("Error fetching #{url}: #{response}") if response.code != 200
-          return allow_refresh if refresh_hit? response
-          hit?(response)
+          if refresh_hit? response
+            allow_refresh
+          else
+            hit?(response)
+          end
         end
       end
 
