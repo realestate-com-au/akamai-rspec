@@ -1,5 +1,24 @@
 Change history / upgrade notes
 
+# 1.1.0
+
+## Redirects
+
+Redirects matchers now accept custom headers, e.g.
+```
+should be_permanantly_redirected_to(other_url, headers: {cookie: 'foo: bar'})
+```
+
+`be_temporarily_redirected_with_trailing_slash` is deprecated in favor
+of `redirect_to_add_trailing_slash(with: 302)`.
+
+## SSL checks
+
+`be_verifiably_secure` no longer accidentally tests redirects.
+
+To get the old behavior, add a check for:
+`should be_permanantly_redirected_to(other_url).then be_verifiably_secure`
+
 # 1.0.0
 
 ## Loading

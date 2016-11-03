@@ -15,8 +15,8 @@ module AkamaiRSpec
         return secure, url
       end
 
-      def redirect(url, expected_location, expected_response_code)
-        response = AkamaiRSpec::Request.get(url)
+      def redirect(url, expected_location, expected_response_code, headers)
+        response = AkamaiRSpec::Request.get(url, headers)
         fail "Response was #{response.inspect}, expected code #{expected_response_code}" unless response.code == expected_response_code
         unless expected_location === response.headers[:location]
           fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
