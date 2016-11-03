@@ -32,8 +32,15 @@ module AkamaiRSpec
         url = "https://#{url}" unless URI(url).scheme
         begin
           # Avoid AkamaiRspec::Request as it turns off SSL checking
-          @response = RestClient::Request.execute(method: :get, url: url, verify_ssl: OpenSSL::SSL::VERIFY_PEER)
+          @response = RestClient::Request.execute(
+            method: :get,
+            url: url,
+            max_redirects: 0,
+            verify_ssl: OpenSSL::SSL::VERIFY_PEER
+          )
           return true
+        rescue RestClient::MaxRedirectsReached
+          return true # Securely sent a redirect
         rescue => e
           @error = e
           return false
