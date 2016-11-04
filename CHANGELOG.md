@@ -1,5 +1,11 @@
 Change history / upgrade notes
 
+# 1.2.0
+
+## Caching
+
+`honour_origin_cache_headers` no longer crashes if a max-age isn't specified.
+
 # 1.1.0
 
 ## Redirects
