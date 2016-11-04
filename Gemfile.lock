@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    akamai_rspec (1.1.0)
+    akamai_rspec (1.2.0)
       json (>= 1.8)
       rest-client (~> 1.8)
       rspec (>= 3.2)
