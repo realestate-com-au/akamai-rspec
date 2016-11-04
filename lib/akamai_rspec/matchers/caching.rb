@@ -4,17 +4,26 @@ require 'akamai_rspec/request'
 
 module AkamaiRSpec
   module Matchers
-    define :be_cacheable do |request_count: 4, headers: {}, allow_refresh: false|
+    define :be_cacheable do |request_count: :until_same_server, headers: {}, allow_refresh: false|
       match do |url|
         @responses = []
         fail("URL must be a string") unless url.is_a? String
 
-        @responses = (1..request_count).map {
-          AkamaiRSpec::Request.get url, headers
-        }
+        if request_count == :until_same_server
+          while response = AkamaiRSpec::Request.get(url, headers) do
+            if cache_servers.include?(cache_server response.headers[:x_cache])
+              @responses.push response
+              break
+            end
+            @responses.push response
+          end
+        else
+          @responses = (1..request_count).map {
+            AkamaiRSpec::Request.get url, headers
+          }
+        end
 
         @responses.any? do |response|
-          fail("Error fetching #{url}: #{response}") if response.code != 200
           if refresh_hit? response
             allow_refresh
           else
@@ -45,6 +54,14 @@ module AkamaiRSpec
 
       def cache_headers
         @responses.map {|response| response.headers[:x_cache] }
+      end
+
+      def cache_servers
+        cache_headers.map &method(:cache_server)
+      end
+
+      def cache_server(header)
+        header.split(" ")[2]
       end
     end
 

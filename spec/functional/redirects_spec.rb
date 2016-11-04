@@ -76,7 +76,7 @@ describe 'be_temporarily_redirected_to' do
   end
 end
 
-describe 'be_temporarily_redirected_with_trailing_slash' do
+describe 'redirect_to_add_trailing_slash' do
   before(:each) do
     stub_redirect(302, '/redirect/')
     stub_request(:any, DOMAIN + '/wrong').to_return(body: 'abc',
@@ -85,35 +85,35 @@ describe 'be_temporarily_redirected_with_trailing_slash' do
   end
 
   it 'should be successful on 302 to new' do
-    expect(DOMAIN + '/redirect').to be_temporarily_redirected_with_trailing_slash
+    expect(DOMAIN + '/redirect').to redirect_to_add_trailing_slash(with: 302)
   end
 
   it 'should fail on 302 to wrong location' do
-    expect { expect(DOMAIN + '/wrong').to be_temporarily_redirected_with_trailing_slash }
+    expect { expect(DOMAIN + '/wrong').to redirect_to_add_trailing_slash(with: 302) }
       .to raise_error(RuntimeError)
   end
 
   it 'should fail on 302 without trailing slash' do
     stub_redirect(302, '/redirected')
-    expect { expect(DOMAIN + '/redirect').to be_temporarily_redirected_with_trailing_slash }
+    expect { expect(DOMAIN + '/redirect').to redirect_to_add_trailing_slash(with: 302) }
       .to raise_error(RuntimeError)
   end
 
   it 'should fail on 300 to correct location' do
     stub_redirect(300)
-    expect { expect(DOMAIN + '/redirect').to be_temporarily_redirected_with_trailing_slash }
+    expect { expect(DOMAIN + '/redirect').to redirect_to_add_trailing_slash(with: 302) }
       .to raise_error(RuntimeError)
   end
 
   it 'should fail on 300 to wrong location' do
     stub_redirect(300)
-    expect { expect(DOMAIN + '/redirect').to be_temporarily_redirected_with_trailing_slash }
+    expect { expect(DOMAIN + '/redirect').to redirect_to_add_trailing_slash(with: 302) }
       .to raise_error(RuntimeError)
   end
 
   it 'should fail on 200' do
     stub_request(:any, DOMAIN + '/redirect').to_return(body: 'abc')
-    expect { expect(DOMAIN + '/redirect').to be_temporarily_redirected_with_trailing_slash }
+    expect { expect(DOMAIN + '/redirect').to redirect_to_add_trailing_slash(with: 302) }
       .to raise_error(RuntimeError)
   end
 end

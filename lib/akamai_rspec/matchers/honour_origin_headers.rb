@@ -119,14 +119,17 @@ module AkamaiRSpec
       end
 
       def expires(origin_response, akamai_response)
-        return origin_expires(origin_response), Time.httpdate(akamai_response.headers[:expires])
+        return origin_expires(origin_response), httpdate(akamai_response.headers[:expires])
       end
 
       def origin_expires(origin_response)
         expires = origin_response.headers[:expires]
-        expires == '0' ? Time.httpdate(origin_response.headers[:date]) : Time.httpdate(expires)
+        expires == '0' ? httpdate(origin_response.headers[:date]) : httpdate(expires)
       end
 
+      def httpdate(header)
+        Time.httpdate(header) rescue nil
+      end
     end
   end
 end

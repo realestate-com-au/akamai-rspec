@@ -5,20 +5,10 @@ module AkamaiRSpec
   class Request
     extend Forwardable
 
-    @@akamai_stg_domain = nil
-    @@akamai_prod_domain = nil
-
-    def self.stg_domain=(domain)
-      @@akamai_stg_domain = domain
+    class << self
+      attr_accessor :stg_domain, :prod_domain, :network
     end
-
-    def self.prod_domain=(domain)
-      @@akamai_prod_domain = domain
-    end
-
-    def self.network=(env)
-      @@env = env
-    end
+    self.network = 'prod'
 
     def self.get(url, headers={})
       new.get(url, headers.merge(debug_headers))
@@ -57,30 +47,22 @@ module AkamaiRSpec
     end
 
     def initialize
-      @@env ||= 'prod'
+      @domain = case self.class.network.downcase
+      when 'staging'
+        self.class.stg_domain or raise ArgumentError.new(
+          "You must set the staging domain: AkamaiRSpec::Request.stg_domain = 'www.example.com.edgesuite.net'"
+        )
+      else
+        self.class.prod_domain or raise ArgumentError.new(
+          "You must set the prod domain: AkamaiRSpec::Request.prod_domain = 'www.example.com.edgesuite.net'"
+        )
+      end
 
-      @domain = case @@env.downcase
-                when 'staging'
-                  if @@akamai_stg_domain.nil?
-                    raise ArgumentError.new(
-                      "You must set the staging domain: AkamaiRSpec::Request.stg_domain = 'www.example.com.edgesuite.net'"
-                    )
-                  end
-
-                  @@akamai_stg_domain
-                else
-                  if @@akamai_prod_domain.nil?
-                    raise ArgumentError.new(
-                      "You must set the prod domain: AkamaiRSpec::Request.prod_domain = 'www.example.com.edgesuite.net'"
-                    )
-                  end
-
-                  @@akamai_prod_domain
-                end
-
-      @rest_client = RestClient::Request.new(method: :get,
-                                              url: 'fakeurl.com',
-                                              verify_ssl: false)
+      @rest_client = RestClient::Request.new(
+        method: :get,
+        url: 'fakeurl.com',
+        verify_ssl: false
+      )
     end
 
     delegate [:parse_url_with_auth, :stringify_headers] => :@rest_client
@@ -115,8 +97,7 @@ module AkamaiRSpec
 
     def build_request(uri, headers)
       req = Net::HTTP::Get.new(uri)
-      headers.each { |key, value| req.send(:[]=, key, value) }
-
+      headers.each { |key, value| req[key] = value }
       req
     end
   end

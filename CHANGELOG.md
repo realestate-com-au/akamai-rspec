@@ -1,5 +1,15 @@
 Change history / upgrade notes
 
+# 1.2.0
+
+## Caching
+
+`be_cacheable` now makes requests for the same resource until it gets two requests served by the same edge node.
+
+`be_cacheable` no longer checks for a response status of 200; use `be_successful` to check this.
+
+`honour_origin_cache_headers` no longer crashes if a max-age isn't specified.
+
 # 1.1.0
 
 ## Redirects

@@ -13,7 +13,7 @@ module AkamaiRSpec
           fail("AKA_PM_FWD_URL not found in the x-akamai-session-info header '#{session_info}'")
         end
         outcome_url = outcome_attribute.split('value=')[1]
-        response.code == 200 && outcome_url == "#{channel}"
+        response.code == 200 && outcome_url == channel
       end
     end
   end
