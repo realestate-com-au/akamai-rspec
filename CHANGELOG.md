@@ -4,6 +4,8 @@ Change history / upgrade notes
 
 ## Caching
 
+`be_cacheable` no longer checks for a response status of 200; use `be_successful` to check this.
+
 `honour_origin_cache_headers` no longer crashes if a max-age isn't specified.
 
 # 1.1.0

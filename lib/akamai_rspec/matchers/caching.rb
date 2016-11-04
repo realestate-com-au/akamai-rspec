@@ -14,7 +14,6 @@ module AkamaiRSpec
         }
 
         @responses.any? do |response|
-          fail("Error fetching #{url}: #{response}") if response.code != 200
           if refresh_hit? response
             allow_refresh
           else
