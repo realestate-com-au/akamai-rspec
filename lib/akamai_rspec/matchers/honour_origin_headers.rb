@@ -64,7 +64,7 @@ module AkamaiRSpec
       end
 
       def max_age_to_num(max_age)
-        max_age.split('=').last.to_i
+        max_age.split('=').last.to_i rescue 0
       end
 
       def clean_max_age(cc_directives)
@@ -113,7 +113,8 @@ module AkamaiRSpec
       end
 
       def validate_expires(origin, akamai)
-        unless akamai.to_i == origin.to_i
+        # Allow 3 seconds of clock skew
+        unless (akamai.to_i - origin.to_i).abs > 3
           fail "Origin sent 'Expires: #{origin}' but Akamai sent 'Expires: #{akamai}'"
         end
       end
