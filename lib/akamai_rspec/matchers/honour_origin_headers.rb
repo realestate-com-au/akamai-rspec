@@ -64,7 +64,7 @@ module AkamaiRSpec
       end
 
       def max_age_to_num(max_age)
-        max_age.split('=').last.to_i rescue 0
+        max_age.split('=').last.to_i rescue nil
       end
 
       def clean_max_age(cc_directives)
@@ -76,7 +76,9 @@ module AkamaiRSpec
       def check_max_age(origin_cc_directives, akamai_cc_directives)
         origin_max_age, origin_cc_directives = clean_max_age(origin_cc_directives)
         akamai_max_age, akamai_cc_directives = clean_max_age(akamai_cc_directives)
-        if akamai_max_age > origin_max_age
+        fail "Akamai sent a max-age but Origin did not" if akamai_max_age && origin_max_age.nil?
+
+        if (akamai_max_age && origin_max_age) && (akamai_max_age > origin_max_age)
           fail "Akamai sent a max-age greater than Origin's: #{akamai_max_age} > #{origin_max_age}"
         end
         return origin_cc_directives, akamai_cc_directives
