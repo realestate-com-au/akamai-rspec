@@ -1,7 +1,7 @@
 
 module AkamaiRSpec
   module Matchers
-    define :be_forwarded_to_index do |channel|
+    define :be_forwarded_to_path do |channel|
       match do |url|
         response = Request.get(url)
         session_info = response.headers[:x_akamai_session_info]
@@ -16,5 +16,7 @@ module AkamaiRSpec
         response.code == 200 && outcome_url == channel
       end
     end
+
+    alias_method :be_forwarded_to_index, :be_forwarded_to_path
   end
 end

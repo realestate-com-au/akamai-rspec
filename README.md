@@ -186,15 +186,17 @@ expect(url).to have_cp_code(cp_code)
 
 - Check that cache key contains Content Provider Code
 
-##### `be_forwarded_to_index`
+##### `be_forwarded_to_path`
 ```
-expect("example.com/foo").to be_forwarded_to_index("foo")
+expect("example.com/foo").to be_forwarded_to_path("/foo")
 ```
+Aliases: `be_forwarded_to_index`
 
 Expect response to have an x-akamai-session-info header containing
-`AKA_PM_FWD_URL; value="foo"`
+`AKA_PM_FWD_URL; value="/foo"`
 
-This means that the request is being passed back to the origin "foo"
+This means that the request is being passed back to the origin
+with a path of "/foo"
 
 ## Advanced usage
 
