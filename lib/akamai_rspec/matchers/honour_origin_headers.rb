@@ -108,15 +108,25 @@ module AkamaiRSpec
       def check_expires(origin_response, akamai_response, headers)
         if [:both, :expires].include? headers
           origin_expires, akamai_expires = expires(origin_response, akamai_response)
-          validate_expires(origin_expires, akamai_expires)
+
+          fail "Origin sent 'Expires: #{
+            origin_response.headers[:expires]
+          }' but Akamai sent 'Expires: #{
+          akamai_response.headers[:expires]
+          }', varies by #{
+          expires_diff origin_expires, akamai_expires
+          } seconds" unless expires_match?(origin_expires, akamai_expires)
+
         end
       end
 
-      def validate_expires(origin, akamai)
+      def expires_match?(origin, akamai)
         # Allow 3 seconds of clock skew
-        unless (akamai.to_i - origin.to_i).abs > 3
-          fail "Origin sent 'Expires: #{origin}' but Akamai sent 'Expires: #{akamai}'"
-        end
+         expires_diff(origin, akamai) <= 3
+      end
+
+      def expires_diff(origin, akamai)
+        ((akamai || Time.now).to_i - (origin || Time.now).to_i).abs
       end
 
       def expires(origin_response, akamai_response)
