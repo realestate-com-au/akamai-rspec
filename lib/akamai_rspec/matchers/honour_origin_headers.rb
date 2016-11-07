@@ -6,11 +6,12 @@ require 'uri'
 module AkamaiRSpec
   module Matchers
 
-    define :honour_origin_cache_headers do |origin, headers=:both|
+    define :honour_origin_cache_headers do |origin, headers=:both, max_clock_skew: 10|
       header_options = [:cache_control, :expires, :both]
       fail("Headers must be one of: #{header_options}") unless header_options.include? headers
 
       match do |url|
+        @max_clock_skew = max_clock_skew
         akamai_response = AkamaiRSpec::Request.get url
         url = "http://" + url unless url =~ /^http/
         origin_url = URI(url)
@@ -123,8 +124,8 @@ module AkamaiRSpec
       end
 
       def expires_match?(origin, akamai)
-        # Allow 3 seconds of clock skew
-         expires_diff(origin, akamai) <= 3
+        # Allow some clock skew
+         expires_diff(origin, akamai) <= @max_clock_skew
       end
 
       def expires_diff(origin, akamai)
