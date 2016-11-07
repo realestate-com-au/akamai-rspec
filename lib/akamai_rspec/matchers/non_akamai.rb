@@ -28,8 +28,8 @@ module AkamaiRSpec
 
     define :be_verifiably_secure do
       match do |url|
-        return false if URI(url).scheme == "http"
         url = "https://#{url}" unless URI(url).scheme
+        url = url.gsub(/^http:/, 'https:')
         begin
           # Avoid AkamaiRspec::Request as it turns off SSL checking
           @response = RestClient::Request.execute(
@@ -41,14 +41,14 @@ module AkamaiRSpec
           return true
         rescue RestClient::MaxRedirectsReached
           return true # Securely sent a redirect
-        rescue => e
+        rescue Exception => e
           @error = e
           return false
         end
       end
 
       failure_message do |url|
-        "got error #{@error} fetching #{@response}"
+        "got error #{@error.inspect} fetching #{@response}"
       end
     end
 
