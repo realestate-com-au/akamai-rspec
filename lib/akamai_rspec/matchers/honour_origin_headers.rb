@@ -115,9 +115,9 @@ module AkamaiRSpec
           fail "Origin sent 'Expires: #{
             origin_response.headers[:expires]
           }' but Akamai sent 'Expires: #{
-          akamai_response.headers[:expires]
+            akamai_response.headers[:expires]
           }', varies by #{
-          expires_diff origin_expires, akamai_expires
+            expires_diff origin_expires, akamai_expires
           } seconds" unless expires_match?(origin_expires, akamai_expires)
 
         end
