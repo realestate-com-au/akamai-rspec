@@ -1,5 +1,9 @@
 Change history / upgrade notes
 
+# 1.2.2
+
+`be_cacheable` now makes requests for the same resource until it gets N requests (default=4) served by the same edge node.
+
 # 1.2.0
 
 ## Caching
