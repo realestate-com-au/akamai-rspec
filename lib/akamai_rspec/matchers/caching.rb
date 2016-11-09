@@ -4,18 +4,16 @@ require 'akamai_rspec/request'
 
 module AkamaiRSpec
   module Matchers
-    define :be_cacheable do |request_count: :until_same_server, headers: {}, allow_refresh: false|
+    define :be_cacheable do |request_count: 4, only_same_server: true, headers: {}, allow_refresh: false|
       match do |url|
         @responses = []
         fail("URL must be a string") unless url.is_a? String
 
-        if request_count == :until_same_server
+        if only_same_server
           while response = AkamaiRSpec::Request.get(url, headers) do
-            if cache_servers.include?(cache_server response.headers[:x_cache])
-              @responses.push response
-              break
-            end
+            responses_from_same_server = cache_servers.count(cache_server response.headers[:x_cache])
             @responses.push response
+            break if responses_from_same_server >= request_count
           end
         else
           @responses = (1..request_count).map {
