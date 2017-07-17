@@ -42,8 +42,15 @@ module AkamaiRSpec
         rescue RestClient::MaxRedirectsReached
           return true # Securely sent a redirect
         rescue Exception => e
-          @error = e
-          return false
+          begin
+            if e.response # Securely sent a non-success HTTP code
+                          # See: https://github.com/rest-client/rest-client/tree/1.8.x#exceptions-see-wwww3orgprotocolsrfc2616rfc2616-sec10html
+              return true
+            end
+          rescue Exception => exception_on_reading_response
+            @error = exception_on_reading_response
+            return false
+          end
         end
       end
 
