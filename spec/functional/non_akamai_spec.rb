@@ -98,6 +98,14 @@ describe 'be_verifiably_secure' do
       expect("https://#{DOMAIN}/301loop").to be_verifiably_secure
     end
   end
+
+  describe 'verifying a URL with the https protocol that returns 404' do
+    it "succeeds when it verifies correctly" do
+      stub_request(:any, "https://#{DOMAIN}/notfound").
+        to_return(body: 'not found', status: [404, 'not found'])
+      expect("https://#{DOMAIN}/notfound").to be_verifiably_secure
+    end
+  end
 end
 
 describe 'be_forbidden' do
