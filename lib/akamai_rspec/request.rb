@@ -6,9 +6,26 @@ module AkamaiRSpec
     extend Forwardable
 
     class << self
-      attr_accessor :stg_domain, :prod_domain, :network
+      attr_accessor :stg_domain, :prod_domain, :network, :debug_headers
     end
     self.network = 'prod'
+    self.debug_headers = {
+      pragma: [
+        'akamai-x-cache-on',
+        'akamai-x-cache-remote-on',
+        'akamai-x-check-cacheable',
+        'akamai-x-get-cache-key',
+        'akamai-x-get-extracted-values',
+        'akamai-x-get-nonces',
+        'akamai-x-get-ssl-client-session-id',
+        'akamai-x-get-true-cache-key',
+        'akamai-x-serial-no'
+      ].join(", ")
+    }
+
+    def self.add_debug_header(key, value)
+      self.debug_headers["#{key}"]  = value
+    end
 
     def self.get(url, headers={})
       new.get(url, headers.merge(debug_headers))
@@ -28,22 +45,6 @@ module AkamaiRSpec
       response = new.get(url, debug_headers.merge({'Accept-Encoding' => 'gzip'}))
       RestClient::Request.decode(response.headers[:content_encoding], response.body)
       response
-    end
-
-    def self.debug_headers
-      {
-        pragma: [
-          'akamai-x-cache-on',
-          'akamai-x-cache-remote-on',
-          'akamai-x-check-cacheable',
-          'akamai-x-get-cache-key',
-          'akamai-x-get-extracted-values',
-          'akamai-x-get-nonces',
-          'akamai-x-get-ssl-client-session-id',
-          'akamai-x-get-true-cache-key',
-          'akamai-x-serial-no'
-        ].join(", ")
-      }
     end
 
     def initialize

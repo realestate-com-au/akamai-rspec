@@ -1,5 +1,11 @@
 Change history / upgrade notes
 
+# 1.2.5
+
+`AkamaiRSpec::Request.debug_headers` changed to be a member variable instead of a property method.
+
+`AkamaiRSpec::Request.add_debug_header` method added to inject additional headers.
+
 # 1.2.2
 
 `be_cacheable` now makes requests for the same resource until it gets N requests (default=4) served by the same edge node.
