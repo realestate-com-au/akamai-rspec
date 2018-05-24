@@ -1,6 +1,6 @@
 Change history / upgrade notes
 
-# 1.2.6
+# 1.2.7
 
 Temporary redirects matchers now accepts 302 _and_ 307 response codes.
 
