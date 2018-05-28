@@ -17,9 +17,17 @@ module AkamaiRSpec
 
       def redirect(url, expected_location, expected_response_code, headers)
         response = AkamaiRSpec::Request.get(url, headers)
-        fail "Response was #{response.inspect}, expected code #{expected_response_code}" unless response.code == expected_response_code
-        unless expected_location === response.headers[:location]
-          fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
+
+        if expected_response_code.kind_of?(Array)
+          fail "Response was #{response.inspect}, expected code #{expected_response_code}" unless expected_response_code.include? response.code
+          unless expected_location === response.headers[:location]
+            fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
+          end
+        else
+          fail "Response was #{response.inspect}, expected code #{expected_response_code}" unless response.code == expected_response_code
+          unless expected_location === response.headers[:location]
+            fail "redirect location was #{response.headers[:location]} (expected #{expected_location})"
+          end
         end
 
         if @and_then_matchers

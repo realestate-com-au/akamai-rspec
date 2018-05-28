@@ -14,7 +14,7 @@ module AkamaiRSpec
     define :be_temporarily_redirected_to do |expected_location, headers: {}|
       include AkamaiRSpec::Helpers::ChainableRedirect
       match do |url|
-        redirect(url, expected_location, 302, headers)
+        redirect(url, expected_location, [ 302, 307 ], headers)
       end
     end
 

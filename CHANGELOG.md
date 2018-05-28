@@ -1,5 +1,9 @@
 Change history / upgrade notes
 
+# 1.2.7
+
+Temporary redirects matchers now accepts 302 _and_ 307 response codes.
+
 # 1.2.5
 
 `AkamaiRSpec::Request.debug_headers` changed to be a member variable instead of a property method.
